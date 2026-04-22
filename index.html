@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oddle Logo — Thinking Animation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f5f5f5;
+      font-family: system-ui, sans-serif;
+    }
+
+    .logo-container {
+      width: 120px;
+      height: 120px;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .controls .buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      border: 2px solid #3D0099;
+      border-radius: 8px;
+      background: white;
+      color: #3D0099;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .controls button:hover {
+      background: #3D0099;
+      color: white;
+    }
+
+    .size-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .size-control button {
+      padding: 6px 12px;
+      border: 2px solid #3D0099;
+      border-radius: 6px;
+      background: white;
+      color: #3D0099;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .size-control button.active,
+    .size-control button:hover {
+      background: #3D0099;
+      color: white;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #3D0099;
+      font-weight: 600;
+    }
+
+    .speed-control input[type="range"] {
+      width: 200px;
+      accent-color: #3D0099;
+    }
+
+    .speed-control .speed-value {
+      min-width: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo-container">
+    <svg viewBox="-120 -120 240 240">
+
+      <!--
+        4 ELEMENTS (bottom → top):
+        1. TAIL   — bean outer shape, starts scale(0), grows from eye center
+        2. RING   — purple stroke circle (eye outline)
+        3. RINGBG — white filled circle (hides tail inside eye area)
+        4. DOT    — purple circle (the pupil)
+      -->
+
+      <!-- 1. TAIL: bean outer path (no cutout), scaled from eye center -->
+      <g id="tail-group">
+        <path
+          id="tail"
+          transform="translate(-120.5, -120.5)"
+          d="M214.485 25.738C180.168 -8.579 124.234 -8.579 89.917 25.738L25.738 89.917C-8.579 124.234 -8.579 180.168 25.738 214.485C60.056 248.803 115.989 248.802 150.306 214.485L214.485 150.306C248.802 115.989 248.803 60.055 214.485 25.738Z"
+          fill="#3D0099"
+        />
+      </g>
+
+      <!-- 2+3. RING UNIT: moves together -->
+      <g id="ring-unit">
+        <!-- 2. RING: purple stroke circle -->
+        <circle id="ring" cx="0" cy="0" r="73"
+          fill="none" stroke="#3D0099" stroke-width="24" />
+        <!-- 3. RING BG: white circle, masks tail inside eye -->
+        <circle id="ring-bg" cx="0" cy="0" r="61" fill="white" />
+      </g>
+
+      <!-- 4. DOT: the eye pupil -->
+      <circle id="dot" cx="0" cy="0" r="28" fill="#3D0099" />
+
+    </svg>
+  </div>
+
+  <div class="controls">
+    <div class="size-control">
+      <button data-size="48">48px</button>
+      <button data-size="80">80px</button>
+      <button data-size="120" class="active">120px</button>
+    </div>
+    <div class="speed-control">
+      <span>Slow</span>
+      <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1" />
+      <span class="speed-value" id="speed-label">1x</span>
+      <span>Fast</span>
+    </div>
+    <div class="buttons">
+      <button id="btn-think">Play Thinking</button>
+      <button id="btn-resolve">Resolve to Logo</button>
+      <button id="btn-full">Full Sequence</button>
+      <button id="btn-reset">Reset</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+  <script>
+    const tailGroup = document.getElementById('tail-group');
+    const ringUnit = document.getElementById('ring-unit');
+    const dot = document.getElementById('dot');
+
+    const ORBIT_RADIUS = 34;
+    const RING_WIGGLE = 3;
+
+    // Eye center in SVG coords (where ring-unit lands, tail scales from)
+    const EYE = { x: 34, y: -35 };
+
+    /* ── THINKING ── */
+    function createThinkingTimeline(revolutions = 3) {
+      const tl = gsap.timeline();
+      const totalRevs = 2 + revolutions;
+      const totalAngle = Math.PI * 2 * totalRevs;
+      const totalDuration = 0.6 * totalRevs;
+      const windupEnd = 2 / totalRevs;
+
+      const state = { progress: 0, wiggle: 0 };
+
+      tl.to(state, {
+        progress: 1,
+        duration: totalDuration,
+        ease: 'none',
+        onUpdate() {
+          const p = state.progress;
+          const angle = Math.PI / 2 + totalAngle * p;
+
+          let radius;
+          if (p < windupEnd) {
+            const rp = p / windupEnd;
+            radius = ORBIT_RADIUS * (rp * rp);
+          } else {
+            radius = ORBIT_RADIUS;
+          }
+
+          const dx = Math.cos(angle) * radius;
+          const dy = Math.sin(angle) * radius;
+          dot.setAttribute('cx', dx);
+          dot.setAttribute('cy', dy);
+
+          // Ring unit wiggles toward the dot
+          const wx = dx * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
+          const wy = dy * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
+          gsap.set(ringUnit, { x: wx, y: wy });
+        },
+      });
+
+      tl.to(state, { wiggle: 1, duration: 0.4, ease: 'power2.out' }, totalDuration * windupEnd);
+      tl.to(state, { wiggle: 0, duration: 0.5, ease: 'power2.in' }, totalDuration - 0.5);
+
+      // Spiral inward to center
+      const endState = { angle: Math.PI / 2 + totalAngle, radius: ORBIT_RADIUS };
+      tl.to(endState, {
+        radius: 0,
+        angle: Math.PI / 2 + totalAngle + Math.PI * 2,
+        duration: 0.6,
+        ease: 'power2.out',
+        onUpdate() {
+          dot.setAttribute('cx', Math.cos(endState.angle) * endState.radius);
+          dot.setAttribute('cy', Math.sin(endState.angle) * endState.radius);
+        },
+      });
+
+      tl.to(ringUnit, { x: 0, y: 0, duration: 0.2, ease: 'power2.out' }, '>-0.2');
+
+      return tl;
+    }
+
+    /* ── RESOLVE ── */
+    function createResolveTimeline() {
+      const tl = gsap.timeline();
+
+      // Ring unit + dot shift to eye center (NE)
+      tl.to(ringUnit, {
+        x: EYE.x, y: EYE.y,
+        duration: 0.7,
+        ease: 'power2.inOut',
+      });
+      tl.to(dot, {
+        attr: { cx: EYE.x, cy: EYE.y },
+        duration: 0.7,
+        ease: 'power2.inOut',
+      }, '<');
+
+      // Tail (bean shape) scales up from eye center
+      // Starts at scale 0 → grows to full size
+      tl.to(tailGroup, {
+        scale: 1,
+        svgOrigin: `${EYE.x} ${EYE.y}`,
+        duration: 0.7,
+        ease: 'power2.inOut',
+      }, '<');
+
+      return tl;
+    }
+
+    /* ── RESET ── */
+    function resetAll() {
+      gsap.globalTimeline.clear();
+      gsap.set(ringUnit, { x: 0, y: 0 });
+      gsap.set(tailGroup, { scale: 0, svgOrigin: `${EYE.x} ${EYE.y}` });
+      gsap.set(dot, { attr: { cx: 0, cy: 0 } });
+    }
+
+    // Initial state: tail hidden (scale 0)
+    resetAll();
+
+    /* ── SIZE CONTROL ── */
+    const logoContainer = document.querySelector('.logo-container');
+    document.querySelectorAll('.size-control button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelector('.size-control .active').classList.remove('active');
+        btn.classList.add('active');
+        const size = btn.dataset.size + 'px';
+        logoContainer.style.width = size;
+        logoContainer.style.height = size;
+      });
+    });
+
+    /* ── SPEED CONTROL ── */
+    const speedSlider = document.getElementById('speed');
+    const speedLabel = document.getElementById('speed-label');
+    let timeScale = 1;
+
+    speedSlider.addEventListener('input', () => {
+      timeScale = parseFloat(speedSlider.value);
+      speedLabel.textContent = timeScale.toFixed(1) + 'x';
+      // Update any running timeline
+      gsap.globalTimeline.timeScale(timeScale);
+    });
+
+    /* ── BUTTONS ── */
+    document.getElementById('btn-think').addEventListener('click', () => {
+      resetAll();
+      createThinkingTimeline(3).play();
+    });
+
+    document.getElementById('btn-resolve').addEventListener('click', () => {
+      resetAll();
+      createResolveTimeline().play();
+    });
+
+    document.getElementById('btn-full').addEventListener('click', () => {
+      resetAll();
+      const master = gsap.timeline();
+      master.add(createThinkingTimeline(2));
+      master.add(createResolveTimeline(), '-=0.1');
+      master.play();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', resetAll);
+  </script>
+</body>
+</html>
