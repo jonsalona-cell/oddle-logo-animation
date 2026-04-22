@@ -416,24 +416,7 @@
 
   <div class="grid">
 
-    <!-- ARTBOARD 1 (hidden) -->
-    <div class="card" id="card-1" style="display:none;">
-      <span class="card-label purple">00 — Thinking + Resolve</span>
-      <h2>Spinner to Logo</h2>
-      <p>Dot spirals outward from center, orbits inside the ring with physics wiggle, then resolves into the full Oddle bean logo.</p>
-      <div class="demo">
-        <div class="logo-container" style="width:80px;height:80px;"></div>
-      </div>
-      <div class="card-controls">
-        <button data-action="think">Start</button>
-        <select data-role="version">
-          <option value="v1" selected>Version 1</option>
-        </select>
-      </div>
-      <div class="card-footer">GSAP timeline · spiral windup · ring wiggle · bean scale reveal</div>
-    </div>
-
-    <!-- ARTBOARD 2 -->
+    <!-- ARTBOARD 1 -->
     <div class="card" id="card-2">
       <span class="card-label purple">01 — Orbital Spinner</span>
       <h2>Spinning Dot</h2>
@@ -444,11 +427,11 @@
       <div class="card-controls">
         <button data-action="think">Start</button>
         <select data-role="version">
-          <option value="v1" selected>Version 1</option>
-          <option value="v2">Version 2</option>
+          <option value="v1">Version 1</option>
+          <option value="v2" selected>Version 2</option>
         </select>
       </div>
-      <div class="version-desc" data-role="version-desc">Ring wiggle + thinning effect</div>
+      <div class="version-desc" data-role="version-desc">Clean orbit, no wiggle</div>
       <div class="card-footer">GSAP timeline · in-logo spin · un-resolve · wiggle · resolve</div>
     </div>
 
@@ -470,6 +453,43 @@
       <div class="card-footer">GSAP timeline · expanding dot pulse · psychedelic loop</div>
     </div>
 
+    <!-- ARTBOARD 4 -->
+    <div class="card" id="card-4">
+      <span class="card-label purple">03 — Eye Gaze</span>
+      <h2>Looking Around #1</h2>
+      <p>The dot becomes a gazing eye that looks around curiously while thinking. Expressive, playful, and a bit comical.</p>
+      <div class="demo">
+        <div class="logo-container" style="width:80px;height:80px;"></div>
+      </div>
+      <div class="card-controls">
+        <button data-action="think">Start</button>
+        <select data-role="version">
+          <option value="v1" selected>Version 1</option>
+        </select>
+      </div>
+      <div class="version-desc" data-role="version-desc">Curious gaze with blinks</div>
+      <div class="card-footer"></div>
+    </div>
+
+    <!-- ARTBOARD 5 -->
+    <div class="card" id="card-5">
+      <span class="card-label green">04 — Two-Eye Face</span>
+      <h2>Looking Around #2</h2>
+      <p>The dot splits into two eyes forming a face. The head stretches and leans into each gaze direction for a playful, cartoonish feel.</p>
+      <div class="demo">
+        <div class="logo-container" style="width:80px;height:80px;"></div>
+      </div>
+      <div class="card-controls">
+        <button data-action="think">Start</button>
+        <select data-role="version">
+          <option value="v1" selected>Version 1</option>
+          <option value="v2">Version 2</option>
+        </select>
+      </div>
+      <div class="version-desc" data-role="version-desc">Smiley face + head stretch</div>
+      <div class="card-footer"></div>
+    </div>
+
   </div>
 
   <!-- footer removed for cleaner layout -->
@@ -487,104 +507,6 @@
     const ORBIT_RADIUS = 34;
     const RING_WIGGLE = 3;
     const EYE = { x: 34, y: -35 };
-
-    /* ── ARTBOARD FACTORY ── */
-    function createArtboard(cardEl) {
-      const container = cardEl.querySelector('.logo-container');
-      const ns = 'http://www.w3.org/2000/svg';
-      const svg = document.createElementNS(ns, 'svg');
-      svg.setAttribute('viewBox', '-120 -120 240 240');
-      svg.style.width = '100%';
-      svg.style.height = '100%';
-      svg.style.overflow = 'visible';
-
-      svg.innerHTML = `
-        <g data-role="tail-group">
-          <path transform="translate(-120.5,-120.5)" d="${BEAN_PATH}" fill="#3D0099" />
-        </g>
-        <g data-role="ring-unit">
-          <circle cx="0" cy="0" r="73" fill="none" stroke="#3D0099" stroke-width="24" />
-          <circle data-role="ring-bg" cx="0" cy="0" r="61" fill="white" />
-        </g>
-        <circle data-role="dot" cx="0" cy="0" r="28" fill="#3D0099" />
-      `;
-      container.appendChild(svg);
-
-      const tailGroup = svg.querySelector('[data-role="tail-group"]');
-      const ringUnit = svg.querySelector('[data-role="ring-unit"]');
-      const dot = svg.querySelector('[data-role="dot"]');
-
-      function createThinkingTimeline(revolutions = 3) {
-        const tl = gsap.timeline();
-        const totalRevs = 2 + revolutions;
-        const totalAngle = Math.PI * 2 * totalRevs;
-        const totalDuration = 0.6 * totalRevs;
-        const windupEnd = 2 / totalRevs;
-        const state = { progress: 0, wiggle: 0 };
-
-        tl.to(state, {
-          progress: 1, duration: totalDuration, ease: 'none',
-          onUpdate() {
-            const p = state.progress;
-            const angle = Math.PI / 2 + totalAngle * p;
-            let radius;
-            if (p < windupEnd) { const rp = p / windupEnd; radius = ORBIT_RADIUS * (rp * rp); }
-            else { radius = ORBIT_RADIUS; }
-            const dx = Math.cos(angle) * radius;
-            const dy = Math.sin(angle) * radius;
-            dot.setAttribute('cx', dx);
-            dot.setAttribute('cy', dy);
-            const wx = dx * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
-            const wy = dy * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
-            gsap.set(ringUnit, { x: wx, y: wy });
-          },
-        });
-        tl.to(state, { wiggle: 1, duration: 0.4, ease: 'power2.out' }, totalDuration * windupEnd);
-        tl.to(state, { wiggle: 0, duration: 0.5, ease: 'power2.in' }, totalDuration - 0.5);
-
-        const endState = { angle: Math.PI / 2 + totalAngle, radius: ORBIT_RADIUS };
-        tl.to(endState, {
-          radius: 0, angle: Math.PI / 2 + totalAngle + Math.PI * 2,
-          duration: 0.6, ease: 'power2.out',
-          onUpdate() {
-            dot.setAttribute('cx', Math.cos(endState.angle) * endState.radius);
-            dot.setAttribute('cy', Math.sin(endState.angle) * endState.radius);
-          },
-        });
-        tl.to(ringUnit, { x: 0, y: 0, duration: 0.2, ease: 'power2.out' }, '>-0.2');
-        return tl;
-      }
-
-      function createResolveTimeline() {
-        const tl = gsap.timeline();
-        tl.to(ringUnit, { x: EYE.x, y: EYE.y, duration: 0.7, ease: 'power2.inOut' });
-        tl.to(dot, { attr: { cx: EYE.x, cy: EYE.y }, duration: 0.7, ease: 'power2.inOut' }, '<');
-        tl.to(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}`, duration: 0.7, ease: 'power2.inOut' }, '<');
-        return tl;
-      }
-
-      function reset() {
-        gsap.killTweensOf([ringUnit, dot, tailGroup]);
-        gsap.set(ringUnit, { x: 0, y: 0 });
-        gsap.set(tailGroup, { scale: 0, svgOrigin: `${EYE.x} ${EYE.y}` });
-        gsap.set(dot, { attr: { cx: 0, cy: 0 } });
-      }
-
-      reset();
-
-      // Wire up card-level buttons
-      cardEl.querySelectorAll('.card-controls button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const action = btn.dataset.action;
-          if (action === 'think')   { reset(); createThinkingTimeline(3); }
-          if (action === 'resolve') { reset(); createResolveTimeline(); }
-          if (action === 'full')    { reset(); const m = gsap.timeline(); m.add(createThinkingTimeline(2)); m.add(createResolveTimeline(), '-=0.1'); }
-          if (action === 'reset')   { reset(); }
-        });
-      });
-
-      return { createThinkingTimeline, createResolveTimeline, reset, container };
-    }
 
     /* ── ARTBOARD 2 FACTORY: Logo Thinking ── */
     function createArtboard2(cardEl) {
@@ -710,6 +632,7 @@
         }
 
         // ── C: looping spin ──
+
         const loopStartAngle = Math.PI / 2 + angularSpeed * transEnd;
         const loopState = { angle: 0 };
 
@@ -789,17 +712,20 @@
           onUpdate() {
             const p = resolveState.progress;
 
-            // Wiggle fades out
+            // Wiggle fades out (V1 only, but safe to run for V2 since it's already 0)
             wiggleState.wiggle = Math.max(0, 1 - p * 2.5);
 
-            // Ring thickens back
-            ringState.thin = Math.max(0, 1 - p * 1.5);
-            updateRingVisuals();
+            // Ring thickens back (V1 only)
+            if (activeVersion === 'v1') {
+              ringState.thin = Math.max(0, 1 - p * 1.5);
+              updateRingVisuals();
+            }
 
             // Dot spirals inward (orbit shrinks, keeps spinning)
             const orbitR = getOrbitRadius() * (1 - p);
             const angle0 = Math.atan2(cy0r.val, cx0r.val);
-            const angle = angle0 + angularSpeed * resolveDuration * p;
+            // Total angle halved so initial ease speed matches the loop speed
+            const angle = angle0 + angularSpeed * resolveDuration * 0.5 * p;
             const dx = Math.cos(angle) * orbitR;
             const dy = Math.sin(angle) * orbitR;
             dot.setAttribute('cx', dx);
@@ -854,11 +780,13 @@
           reset();
           activeVersion = versionSelect ? versionSelect.value : 'v1';
           thinkingTl = createThinkingTimeline(activeVersion);
+          thinkingTl.timeScale(1.4 / gsap.globalTimeline.timeScale());
           btn.textContent = 'End';
           btn.dataset.action = 'resolve';
           btn.className = 'btn-stop';
         } else {
           const resolveTl = createResolveTimeline();
+          resolveTl.timeScale(1.4 / gsap.globalTimeline.timeScale());
           resolveTl.eventCallback('onComplete', setStart);
         }
       });
@@ -915,29 +843,58 @@
         svg.querySelector('[data-role="burst3"]'),
       ];
 
-      // Pre-generate particles per burst group
-      const PARTICLES_PER_RING = 16;
-      const RINGS = 5;
+      // Pre-generate particle pool per burst group (for V2 halftone)
+      const POOL_SIZE = 150;
       const burstParticles = burstGroups.map(g => {
         const particles = [];
-        for (let ring = 0; ring < RINGS; ring++) {
-          for (let j = 0; j < PARTICLES_PER_RING; j++) {
-            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            // Each particle has a fixed angle + slight random offset for organic feel
-            const baseAngle = (j / PARTICLES_PER_RING) * Math.PI * 2;
-            const angle = baseAngle + (Math.random() - 0.5) * 0.3;
-            const ringNorm = (ring + 0.3 + Math.random() * 0.7) / RINGS; // 0→1 normalized radial position
-            c.setAttribute('cx', '0');
-            c.setAttribute('cy', '0');
-            c.setAttribute('r', '0');
-            c.dataset.angle = angle;
-            c.dataset.ringNorm = ringNorm;
-            g.appendChild(c);
-            particles.push(c);
-          }
+        for (let i = 0; i < POOL_SIZE; i++) {
+          const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          c.setAttribute('cx', '0');
+          c.setAttribute('cy', '0');
+          c.setAttribute('r', '0');
+          g.appendChild(c);
+          particles.push(c);
         }
         return particles;
       });
+
+      // Halftone layout constants
+      const RING_SPACING = 9;
+      const DOT_SPACING = 9;
+      const BASE_DOT_R = 5;
+      const EDGE_DOT_R = 3.5;
+
+      // Halftone layout: positions particles as concentric dot rings
+      // Small r = dots overlap (solid), large r = dots separate (halftone)
+      function layoutHalftone(r, particles, color) {
+        let idx = 0;
+        if (r < 2) {
+          // Too small, hide all
+          for (let i = 0; i < particles.length; i++) particles[i].setAttribute('r', '0');
+          return;
+        }
+        const numRings = Math.max(1, Math.floor(r / RING_SPACING));
+        for (let k = 0; k < numRings && idx < particles.length; k++) {
+          const ringR = k === 0 ? 0 : k * RING_SPACING;
+          const ringNorm = r > 0 ? ringR / r : 0; // 0 at center, ~1 at edge
+          const dotR = BASE_DOT_R + (EDGE_DOT_R - BASE_DOT_R) * ringNorm;
+          const numDots = k === 0 ? 1 : Math.max(6, Math.floor(2 * Math.PI * ringR / DOT_SPACING));
+
+          for (let j = 0; j < numDots && idx < particles.length; j++) {
+            const angle = (j / numDots) * Math.PI * 2;
+            const p = particles[idx];
+            p.setAttribute('cx', Math.cos(angle) * ringR);
+            p.setAttribute('cy', Math.sin(angle) * ringR);
+            p.setAttribute('r', dotR);
+            p.setAttribute('fill', color);
+            idx++;
+          }
+        }
+        // Hide unused particles
+        for (let i = idx; i < particles.length; i++) {
+          particles[i].setAttribute('r', '0');
+        }
+      }
 
       const FULL_R = 85;
       const DOT_R = 28;
@@ -1040,36 +997,24 @@
               const color = i % 2 === 0 ? getPurpleColor() : getWhiteColor();
 
               if (isBurst) {
-                // V2: hide solid circle, render burst particles instead
-                el.setAttribute('r', 0);
-
-                const particles = burstParticles[slot];
-                // Particle dot size: big when close to center, shrinks as they spread
-                const baseDotR = 6;
-                particles.forEach(p => {
-                  if (progress <= 0) {
-                    p.setAttribute('r', '0');
-                    return;
-                  }
-                  const norm = parseFloat(p.dataset.ringNorm);
-                  const angle = parseFloat(p.dataset.angle);
-                  const pRadius = r * norm; // radial distance from center
-                  const spreadFactor = Math.max(0, norm * progress);
-                  // Dot size: larger near center, smaller at edge
-                  const dotSize = baseDotR * (1 - norm * 0.6) * Math.min(1, progress * 3);
-
-                  p.setAttribute('cx', Math.cos(angle) * pRadius);
-                  p.setAttribute('cy', Math.sin(angle) * pRadius);
-                  p.setAttribute('r', dotSize);
-                  p.setAttribute('fill', color);
-                });
+                // V2: halftone — solid when small, dot pattern when large
+                el.setAttribute('r', 0); // hide solid circle
+                if (r < 20) {
+                  // Below threshold: render as solid dot (clean small state)
+                  burstParticles[slot].forEach(p => p.setAttribute('r', '0'));
+                  el.setAttribute('r', r);
+                  el.setAttribute('fill', color);
+                  el.setAttribute('stroke', color);
+                  el.setAttribute('stroke-width', '1.5');
+                } else {
+                  layoutHalftone(r, burstParticles[slot], color);
+                }
               } else {
                 // V1: solid expanding circle
                 el.setAttribute('r', r);
                 el.setAttribute('fill', color);
                 el.setAttribute('stroke', color);
                 el.setAttribute('stroke-width', '1.5');
-                // Hide burst particles
                 burstParticles[slot].forEach(p => p.setAttribute('r', '0'));
               }
             }
@@ -1173,7 +1118,7 @@
 
       const versionDescriptions = {
         v1: 'Clean expanding circles',
-        v2: 'Burst into scattered dots',
+        v2: 'Halftone dot pattern',
       };
 
       if (versionSelect && versionDesc) {
@@ -1206,10 +1151,691 @@
       return { createThinkingTimeline, createResolveTimeline, reset, container };
     }
 
+    /* ── ARTBOARD 4 FACTORY: Eye Gaze ── */
+    function createArtboard4(cardEl) {
+      const container = cardEl.querySelector('.logo-container');
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '-120 -120 240 240');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.overflow = 'visible';
+
+      svg.innerHTML = `
+        <g data-role="tail-group">
+          <path transform="translate(-120.5,-120.5)" d="${BEAN_PATH}" fill="#3D0099" />
+        </g>
+        <g data-role="ring-unit">
+          <circle data-role="ring-stroke" cx="0" cy="0" r="73" fill="none" stroke="#3D0099" stroke-width="24" />
+          <circle data-role="ring-bg" cx="0" cy="0" r="61" fill="white" />
+        </g>
+        <circle data-role="dot" cx="${EYE.x}" cy="${EYE.y}" r="28" fill="#3D0099" />
+      `;
+      container.appendChild(svg);
+
+      const tailGroup = svg.querySelector('[data-role="tail-group"]');
+      const ringUnit = svg.querySelector('[data-role="ring-unit"]');
+      const dot = svg.querySelector('[data-role="dot"]');
+
+      // V2 elements: pill blob + second eye + pinch
+      const blob = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      blob.setAttribute('cx', '0'); blob.setAttribute('cy', '0');
+      blob.setAttribute('rx', '28'); blob.setAttribute('ry', '28');
+      blob.setAttribute('fill', getPurpleColor()); blob.setAttribute('opacity', '0');
+      svg.appendChild(blob);
+
+      const pinch = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      pinch.setAttribute('cx', '0'); pinch.setAttribute('cy', '0');
+      pinch.setAttribute('rx', '0'); pinch.setAttribute('ry', '0');
+      pinch.setAttribute('fill', getWhiteColor()); pinch.setAttribute('opacity', '0');
+      svg.appendChild(pinch);
+
+      const dotR = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dotR.setAttribute('cx', '0'); dotR.setAttribute('cy', '0');
+      dotR.setAttribute('r', '0'); dotR.setAttribute('fill', getPurpleColor());
+      svg.appendChild(dotR);
+
+      let thinkingTl = null;
+      let activeVersion = 'v1';
+      const GAZE_R = 20; // smaller range for cute gaze
+      const EYE_SPREAD = 22; // half distance between two eyes
+      const EYE_R = 18; // each eye radius in V2 (smaller than single dot)
+
+      function reset() {
+        if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
+        gsap.killTweensOf([dot, dotR, blob, pinch, ringUnit, tailGroup]);
+        gsap.set(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}` });
+        gsap.set(ringUnit, { x: EYE.x, y: EYE.y, scaleY: 1, svgOrigin: '0 0' });
+        gsap.set(dot, { attr: { cx: EYE.x, cy: EYE.y, r: 28 } });
+        gsap.set(dotR, { attr: { cx: 0, cy: 0, r: 0 } });
+        gsap.set(blob, { attr: { rx: 28, ry: 28, cx: 0, cy: 0 }, opacity: 0 });
+        gsap.set(pinch, { attr: { rx: 0, ry: 0, cx: 0, cy: 0 }, opacity: 0 });
+      }
+
+      function createThinkingTimeline(version = 'v1') {
+        const tl = gsap.timeline();
+
+        // ── Un-resolve: bean → circle ──
+        const transStart = 0.3;
+        const transEnd = 1.5;
+        const abState = { time: 0 };
+
+        tl.to(abState, {
+          time: transEnd, duration: transEnd, ease: 'none',
+          onUpdate() {
+            const t = abState.time;
+            if (t > transStart) {
+              const sp = Math.min(1, (t - transStart) / (transEnd - transStart));
+              const e = sp * sp * (3 - 2 * sp);
+              gsap.set(ringUnit, { x: EYE.x * (1 - e), y: EYE.y * (1 - e) });
+            }
+          },
+        });
+
+        // Dot moves to center during un-resolve
+        tl.to(dot, { attr: { cx: 0, cy: 0 }, duration: transEnd - transStart, ease: 'power2.inOut' }, transStart);
+
+        // Tail shrinks
+        tl.to(tailGroup, {
+          scale: 0, svgOrigin: `${EYE.x} ${EYE.y}`,
+          duration: transEnd - transStart,
+          ease: 'power2.inOut',
+        }, transStart);
+
+        // ── Shared helpers ──
+        const gazeStart = transEnd + 0.2;
+        const G = GAZE_R;
+
+        function pause(duration) {
+          tl.to({}, { duration }, '>');
+        }
+        function blink() {
+          tl.to(ringUnit, { scaleY: 0.08, duration: 0.06, ease: 'power2.in', svgOrigin: '0 0' }, '>');
+          tl.to(ringUnit, { scaleY: 1, duration: 0.1, ease: 'power2.out', svgOrigin: '0 0' }, '>');
+        }
+        function doubleBlink() {
+          blink(); pause(0.08); blink();
+        }
+
+        if (version === 'v1') {
+          // ── V1: Single eye cute curious gaze ──
+          function gaze(cx, cy, duration, ease = 'power2.out') {
+            tl.to(dot, { attr: { cx, cy }, duration, ease }, '>');
+          }
+
+          tl.add(() => {}, gazeStart);
+          gaze(G, -3, 0.35, 'power2.inOut'); pause(0.6);
+          blink(); pause(0.3);
+          gaze(10, -G, 0.5, 'power1.inOut'); pause(0.8);
+          gaze(-G, 0, 0.4, 'power2.inOut'); pause(0.5);
+          blink(); pause(0.4);
+          gaze(-12, G * 0.6, 0.4, 'power2.inOut'); pause(0.5);
+          gaze(0, 0, 0.35, 'power2.inOut'); pause(0.3);
+          doubleBlink(); pause(0.4);
+          gaze(0, -G, 0.3, 'power2.out'); pause(0.7);
+          gaze(5, G * 0.5, 0.5, 'power1.inOut'); pause(0.4);
+          blink(); pause(0.3);
+          gaze(G * 0.8, -8, 0.3, 'power2.out'); pause(0.5);
+          gaze(-G * 0.6, -5, 0.7, 'power1.inOut'); pause(0.4);
+          gaze(G * 0.5, 5, 0.6, 'power1.inOut'); pause(0.3);
+          blink(); pause(0.3);
+          gaze(0, 2, 0.4, 'power2.inOut'); pause(0.2);
+          gaze(0, 0, 0.3, 'power2.out'); pause(0.4);
+          doubleBlink(); pause(0.3);
+
+          const gazeEnd = tl.duration();
+          tl.add(() => { tl.seek(gazeStart); }, gazeEnd);
+
+        } else {
+          // ── V2: Liquid split into two eyes, then gaze as a face ──
+          const splitStart = gazeStart;
+
+          // Show blob at dot position, hide original dot
+          tl.call(() => {
+            blob.setAttribute('fill', getPurpleColor());
+            pinch.setAttribute('fill', getWhiteColor());
+          }, null, splitStart);
+          tl.to(blob, { opacity: 1, duration: 0.01 }, splitStart);
+          tl.to(dot, { attr: { r: 0 }, duration: 0.01 }, splitStart);
+
+          // Blob stretches horizontally (liquid stretch)
+          tl.to(blob, { attr: { rx: 42, ry: 20 }, duration: 0.35, ease: 'power2.inOut' }, splitStart);
+
+          // Pinch appears in the middle and grows (splits the blob)
+          tl.to(pinch, { opacity: 1, duration: 0.01 }, splitStart + 0.2);
+          tl.to(pinch, { attr: { rx: 12, ry: 22 }, duration: 0.25, ease: 'power2.in' }, splitStart + 0.2);
+
+          // Two eyes appear at the ends
+          const splitEnd = splitStart + 0.45;
+          tl.to(dot, { attr: { cx: -EYE_SPREAD, cy: 0, r: EYE_R }, duration: 0.2, ease: 'back.out(1.5)' }, splitEnd - 0.1);
+          tl.to(dotR, { attr: { cx: EYE_SPREAD, cy: 0, r: EYE_R }, duration: 0.2, ease: 'back.out(1.5)' }, splitEnd - 0.1);
+
+          // Fade out blob + pinch
+          tl.to(blob, { opacity: 0, duration: 0.15 }, splitEnd);
+          tl.to(pinch, { opacity: 0, duration: 0.15 }, splitEnd);
+
+          pause(0.3);
+
+          // ── Two-eye gaze: both eyes move together ──
+          const faceGazeStart = tl.duration();
+
+          function faceGaze(dx, dy, duration, ease = 'power2.out') {
+            tl.to(dot, { attr: { cx: -EYE_SPREAD + dx, cy: dy }, duration, ease }, '>');
+            tl.to(dotR, { attr: { cx: EYE_SPREAD + dx, cy: dy }, duration, ease }, '<');
+          }
+          function faceCenter(duration = 0.35) {
+            faceGaze(0, 0, duration, 'power2.inOut');
+          }
+
+          // Blink (cute!)
+          doubleBlink(); pause(0.4);
+
+          // Look right together
+          faceGaze(G * 0.6, -2, 0.35, 'power2.inOut'); pause(0.5);
+          blink(); pause(0.3);
+
+          // Look up-left (thinking)
+          faceGaze(-5, -G * 0.6, 0.5, 'power1.inOut'); pause(0.7);
+
+          // Look at each other (cross-eyed moment — comical!)
+          tl.to(dot, { attr: { cx: -EYE_SPREAD + 8 }, duration: 0.25, ease: 'power2.out' }, '>');
+          tl.to(dotR, { attr: { cx: EYE_SPREAD - 8 }, duration: 0.25, ease: 'power2.out' }, '<');
+          pause(0.4);
+          doubleBlink(); pause(0.3);
+
+          // Snap back to normal
+          faceCenter(); pause(0.3);
+
+          // Look down gently
+          faceGaze(0, G * 0.5, 0.4, 'power2.inOut'); pause(0.4);
+          blink(); pause(0.3);
+
+          // Look right (following something)
+          faceGaze(G * 0.7, 3, 0.5, 'power1.inOut'); pause(0.4);
+
+          // Look left (it went the other way)
+          faceGaze(-G * 0.7, 3, 0.7, 'power1.inOut'); pause(0.3);
+          blink(); pause(0.3);
+
+          // Look up (idea!)
+          faceGaze(0, -G * 0.7, 0.3, 'power2.out'); pause(0.6);
+
+          // Nah... look down
+          faceGaze(3, G * 0.4, 0.45, 'power1.inOut'); pause(0.3);
+
+          // Back to center
+          faceCenter(); pause(0.3);
+          doubleBlink(); pause(0.3);
+
+          // Loop the face gaze
+          const faceGazeEnd = tl.duration();
+          tl.add(() => { tl.seek(faceGazeStart); }, faceGazeEnd);
+        }
+
+        return tl;
+      }
+
+      function createResolveTimeline() {
+        const tl = gsap.timeline();
+        if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
+
+        if (activeVersion === 'v2') {
+          // V2: merge two eyes back into one dot (reverse liquid split)
+          // Eyes come together
+          tl.to(dot, { attr: { cx: -5, cy: 0 }, duration: 0.25, ease: 'power2.inOut' });
+          tl.to(dotR, { attr: { cx: 5, cy: 0 }, duration: 0.25, ease: 'power2.inOut' }, '<');
+
+          // Show blob stretching between them
+          tl.call(() => {
+            blob.setAttribute('fill', getPurpleColor());
+          });
+          tl.to(blob, { opacity: 1, attr: { rx: 30, ry: 18 }, duration: 0.01 }, '>');
+
+          // Eyes merge into blob
+          tl.to(dot, { attr: { r: 0 }, duration: 0.15, ease: 'power2.in' }, '>');
+          tl.to(dotR, { attr: { r: 0 }, duration: 0.15, ease: 'power2.in' }, '<');
+
+          // Blob shrinks to single dot
+          tl.to(blob, { attr: { rx: 28, ry: 28 }, duration: 0.25, ease: 'power2.inOut' }, '>');
+
+          // Swap blob for real dot
+          tl.call(() => {
+            gsap.set(blob, { opacity: 0 });
+            gsap.set(dot, { attr: { cx: 0, cy: 0, r: 28 } });
+          });
+        } else {
+          // V1: dot returns to center
+          tl.to(dot, { attr: { cx: 0, cy: 0 }, duration: 0.3, ease: 'power2.out' });
+        }
+
+        // Resolve: ring → bean (same as 01)
+        tl.to(ringUnit, { x: EYE.x, y: EYE.y, duration: 0.7, ease: 'power2.inOut' });
+        tl.to(dot, { attr: { cx: EYE.x, cy: EYE.y }, duration: 0.7, ease: 'power2.inOut' }, '<');
+        tl.to(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}`, duration: 0.7, ease: 'power2.inOut' }, '<');
+
+        return tl;
+      }
+
+      reset();
+
+      // Wire up Start/End toggle
+      const btn = cardEl.querySelector('[data-action="think"]');
+      const versionSelect = cardEl.querySelector('[data-role="version"]');
+      const versionDesc = cardEl.querySelector('[data-role="version-desc"]');
+      btn.className = 'btn-go';
+
+      const versionDescriptions = {
+        v1: 'Curious gaze with double-takes',
+        v2: 'Liquid split into two-eye face',
+      };
+
+      if (versionSelect && versionDesc) {
+        versionSelect.addEventListener('change', () => {
+          versionDesc.textContent = versionDescriptions[versionSelect.value] || '';
+        });
+      }
+
+      function setStart() {
+        btn.textContent = 'Start';
+        btn.dataset.action = 'think';
+        btn.className = 'btn-go';
+      }
+
+      btn.addEventListener('click', () => {
+        if (btn.dataset.action === 'think') {
+          reset();
+          activeVersion = versionSelect ? versionSelect.value : 'v1';
+          thinkingTl = createThinkingTimeline(activeVersion);
+          btn.textContent = 'End';
+          btn.dataset.action = 'resolve';
+          btn.className = 'btn-stop';
+        } else {
+          const resolveTl = createResolveTimeline();
+          resolveTl.eventCallback('onComplete', setStart);
+        }
+      });
+
+      return { createThinkingTimeline, createResolveTimeline, reset, container };
+    }
+
     /* ── INIT ── */
-    const board1 = createArtboard(document.getElementById('card-1'));
     const board2 = createArtboard2(document.getElementById('card-2'));
     const board3 = createArtboard3(document.getElementById('card-3'));
+    const board4 = createArtboard4(document.getElementById('card-4'));
+
+    /* ── ARTBOARD 5 FACTORY: Two-Eye Face ── */
+    function createArtboard5(cardEl) {
+      const container = cardEl.querySelector('.logo-container');
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '-120 -120 240 240');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.overflow = 'visible';
+
+      svg.innerHTML = `
+        <g data-role="tail-group">
+          <path transform="translate(-120.5,-120.5)" d="${BEAN_PATH}" fill="#3D0099" />
+        </g>
+        <g data-role="ring-unit">
+          <circle data-role="ring-stroke" cx="0" cy="0" r="73" fill="none" stroke="#3D0099" stroke-width="24" />
+          <circle data-role="ring-bg" cx="0" cy="0" r="61" fill="white" />
+        </g>
+        <circle data-role="dot" cx="${EYE.x}" cy="${EYE.y}" r="28" fill="#3D0099" />
+      `;
+      container.appendChild(svg);
+
+      const tailGroup = svg.querySelector('[data-role="tail-group"]');
+      const ringUnit = svg.querySelector('[data-role="ring-unit"]');
+      const dot = svg.querySelector('[data-role="dot"]');
+
+      // V1 elements: blob for split, second eye, pinch
+      const blob = document.createElementNS(ns, 'ellipse');
+      blob.setAttribute('cx', '0'); blob.setAttribute('cy', '0');
+      blob.setAttribute('rx', '28'); blob.setAttribute('ry', '28');
+      blob.setAttribute('fill', getPurpleColor()); blob.setAttribute('opacity', '0');
+      svg.appendChild(blob);
+
+      const pinch = document.createElementNS(ns, 'ellipse');
+      pinch.setAttribute('cx', '0'); pinch.setAttribute('cy', '0');
+      pinch.setAttribute('rx', '0'); pinch.setAttribute('ry', '0');
+      pinch.setAttribute('fill', getWhiteColor()); pinch.setAttribute('opacity', '0');
+      svg.appendChild(pinch);
+
+      const dotR = document.createElementNS(ns, 'circle');
+      dotR.setAttribute('cx', '0'); dotR.setAttribute('cy', '0');
+      dotR.setAttribute('r', '0'); dotR.setAttribute('fill', getPurpleColor());
+      svg.appendChild(dotR);
+
+      // Constants (declared early for winkLine)
+      const GAZE_R = 18;
+      const EYE_SPREAD = 20;
+      const EYE_SIZE = 15;
+      const HEAD_LEAN = 4;
+      const HEAD_STRETCH = 0.06;
+
+      // Wink line: U-shaped curve, same width as eye, hidden by default
+      const winkLine = document.createElementNS(ns, 'path');
+      const winkW = EYE_SIZE;
+      winkLine.setAttribute('d', `M${-winkW},-2 Q${-winkW},${winkW * 0.6} 0,${winkW * 0.6} Q${winkW},${winkW * 0.6} ${winkW},-2`);
+      winkLine.setAttribute('fill', 'none');
+      winkLine.setAttribute('stroke', getPurpleColor());
+      winkLine.setAttribute('stroke-width', '3');
+      winkLine.setAttribute('stroke-linecap', 'round');
+      winkLine.setAttribute('opacity', '0');
+      svg.appendChild(winkLine);
+
+      // V1: Smile
+      const smile = document.createElementNS(ns, 'path');
+      smile.setAttribute('d', 'M-8,28 Q0,36 8,28');
+      smile.setAttribute('fill', 'none');
+      smile.setAttribute('stroke', getPurpleColor());
+      smile.setAttribute('stroke-width', '3');
+      smile.setAttribute('stroke-linecap', 'round');
+      smile.setAttribute('opacity', '0');
+      svg.appendChild(smile);
+
+      // V2: Otter face group
+      const otterFace = document.createElementNS(ns, 'g');
+      otterFace.setAttribute('opacity', '0');
+
+      // Diamond nose
+      const nose = document.createElementNS(ns, 'path');
+      nose.setAttribute('d', 'M0,16 L4,20 L0,24 L-4,20 Z');
+      nose.setAttribute('fill', getPurpleColor());
+      otterFace.appendChild(nose);
+
+      // Two U-shaped mouth lines from nose tip
+      const mouth = document.createElementNS(ns, 'path');
+      mouth.setAttribute('d', 'M0,24 Q-6,32 -10,28 M0,24 Q6,32 10,28');
+      mouth.setAttribute('fill', 'none');
+      mouth.setAttribute('stroke', getPurpleColor());
+      mouth.setAttribute('stroke-width', '2.5');
+      mouth.setAttribute('stroke-linecap', 'round');
+      otterFace.appendChild(mouth);
+
+      // Left whiskers
+      const wL1 = document.createElementNS(ns, 'line');
+      wL1.setAttribute('x1', '-8'); wL1.setAttribute('y1', '20');
+      wL1.setAttribute('x2', '-28'); wL1.setAttribute('y2', '16');
+      const wL2 = document.createElementNS(ns, 'line');
+      wL2.setAttribute('x1', '-8'); wL2.setAttribute('y1', '22');
+      wL2.setAttribute('x2', '-28'); wL2.setAttribute('y2', '22');
+      const wL3 = document.createElementNS(ns, 'line');
+      wL3.setAttribute('x1', '-8'); wL3.setAttribute('y1', '24');
+      wL3.setAttribute('x2', '-28'); wL3.setAttribute('y2', '28');
+
+      // Right whiskers
+      const wR1 = document.createElementNS(ns, 'line');
+      wR1.setAttribute('x1', '8'); wR1.setAttribute('y1', '20');
+      wR1.setAttribute('x2', '28'); wR1.setAttribute('y2', '16');
+      const wR2 = document.createElementNS(ns, 'line');
+      wR2.setAttribute('x1', '8'); wR2.setAttribute('y1', '22');
+      wR2.setAttribute('x2', '28'); wR2.setAttribute('y2', '22');
+      const wR3 = document.createElementNS(ns, 'line');
+      wR3.setAttribute('x1', '8'); wR3.setAttribute('y1', '24');
+      wR3.setAttribute('x2', '28'); wR3.setAttribute('y2', '28');
+
+      [wL1, wL2, wL3, wR1, wR2, wR3].forEach(w => {
+        w.setAttribute('stroke', getPurpleColor());
+        w.setAttribute('stroke-width', '1.5');
+        w.setAttribute('stroke-linecap', 'round');
+        otterFace.appendChild(w);
+      });
+
+      svg.appendChild(otterFace);
+
+      let thinkingTl = null;
+      let activeVersion = 'v1';
+
+      function reset() {
+        if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
+        gsap.killTweensOf([dot, dotR, blob, pinch, smile, otterFace, winkLine, ringUnit, tailGroup]);
+        gsap.set(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}` });
+        gsap.set(ringUnit, { x: EYE.x, y: EYE.y, scaleX: 1, scaleY: 1, svgOrigin: '0 0' });
+        gsap.set(dot, { attr: { cx: EYE.x, cy: EYE.y, r: 28 } });
+        gsap.set(dotR, { attr: { cx: 0, cy: 0, r: 0 } });
+        gsap.set(blob, { attr: { rx: 28, ry: 28, cx: 0, cy: 0 }, opacity: 0 });
+        gsap.set(pinch, { attr: { rx: 0, ry: 0, cx: 0, cy: 0 }, opacity: 0 });
+        gsap.set(smile, { opacity: 0, x: 0, y: 0 });
+        gsap.set(otterFace, { opacity: 0, x: 0, y: 0 });
+        gsap.set(winkLine, { opacity: 0 });
+      }
+
+      function createThinkingTimeline(version = 'v1') {
+        const tl = gsap.timeline();
+
+        // ── Un-resolve: bean → circle ──
+        const transStart = 0.3;
+        const transEnd = 1.5;
+        const abState = { time: 0 };
+
+        tl.to(abState, {
+          time: transEnd, duration: transEnd, ease: 'none',
+          onUpdate() {
+            const t = abState.time;
+            if (t > transStart) {
+              const sp = Math.min(1, (t - transStart) / (transEnd - transStart));
+              const e = sp * sp * (3 - 2 * sp);
+              gsap.set(ringUnit, { x: EYE.x * (1 - e), y: EYE.y * (1 - e) });
+            }
+          },
+        });
+
+        tl.to(dot, { attr: { cx: 0, cy: 0 }, duration: transEnd - transStart, ease: 'power2.inOut' }, transStart);
+        tl.to(tailGroup, {
+          scale: 0, svgOrigin: `${EYE.x} ${EYE.y}`,
+          duration: transEnd - transStart, ease: 'power2.inOut',
+        }, transStart);
+
+        // ── Liquid split ──
+        const splitStart = transEnd + 0.2;
+
+        tl.call(() => {
+          blob.setAttribute('fill', getPurpleColor());
+          pinch.setAttribute('fill', getWhiteColor());
+        }, null, splitStart);
+        tl.to(blob, { opacity: 1, duration: 0.01 }, splitStart);
+        tl.to(dot, { attr: { r: 0 }, duration: 0.01 }, splitStart);
+
+        // Blob stretches
+        tl.to(blob, { attr: { rx: 40, ry: 18 }, duration: 0.35, ease: 'power2.inOut' }, splitStart);
+
+        // Pinch splits it
+        tl.to(pinch, { opacity: 1, duration: 0.01 }, splitStart + 0.2);
+        tl.to(pinch, { attr: { rx: 11, ry: 20 }, duration: 0.25, ease: 'power2.in' }, splitStart + 0.2);
+
+        // Two eyes appear
+        const splitEnd = splitStart + 0.45;
+        tl.to(dot, { attr: { cx: -EYE_SPREAD, cy: 0, r: EYE_SIZE }, duration: 0.2, ease: 'back.out(1.5)' }, splitEnd - 0.1);
+        tl.to(dotR, { attr: { cx: EYE_SPREAD, cy: 0, r: EYE_SIZE }, duration: 0.2, ease: 'back.out(1.5)' }, splitEnd - 0.1);
+
+        // Fade blob + pinch, show smile
+        tl.to(blob, { opacity: 0, duration: 0.15 }, splitEnd);
+        tl.to(pinch, { opacity: 0, duration: 0.15 }, splitEnd);
+        // Face features appear after split settles
+        if (version === 'v1') {
+          tl.call(() => { smile.setAttribute('stroke', getPurpleColor()); }, null, splitEnd + 0.2);
+          tl.to(smile, { opacity: 1, duration: 0.3, ease: 'power2.out' }, splitEnd + 0.2);
+        } else {
+          tl.call(() => {
+            nose.setAttribute('fill', getPurpleColor());
+            mouth.setAttribute('stroke', getPurpleColor());
+            [wL1, wL2, wL3, wR1, wR2, wR3].forEach(w => w.setAttribute('stroke', getPurpleColor()));
+          }, null, splitEnd + 0.2);
+          tl.to(otterFace, { opacity: 1, duration: 0.3, ease: 'power2.out' }, splitEnd + 0.2);
+        }
+
+        // ── Two-eye face gaze with head stretch (no blinks) ──
+        const faceGazeStart = splitEnd + 0.3;
+        tl.add(() => {}, faceGazeStart);
+
+        function pause(d) { tl.to({}, { duration: d }, '>'); }
+
+        // Face gaze: move both eyes + smile + lean/stretch the ring
+        function faceGaze(dx, dy, duration, ease = 'power2.out') {
+          tl.to(dot, { attr: { cx: -EYE_SPREAD + dx, cy: dy }, duration, ease }, '>');
+          tl.to(dotR, { attr: { cx: EYE_SPREAD + dx, cy: dy }, duration, ease }, '<');
+          const faceEl = version === 'v1' ? smile : otterFace;
+          tl.to(faceEl, { x: dx, y: dy, duration, ease }, '<');
+          const mag = Math.sqrt(dx * dx + dy * dy);
+          const normX = mag > 0 ? dx / mag : 0;
+          const normY = mag > 0 ? dy / mag : 0;
+          const lean = mag / GAZE_R;
+          tl.to(ringUnit, {
+            x: normX * HEAD_LEAN * lean,
+            y: normY * HEAD_LEAN * lean,
+            scaleX: 1 + Math.abs(normX) * HEAD_STRETCH * lean - Math.abs(normY) * HEAD_STRETCH * lean * 0.5,
+            scaleY: 1 + Math.abs(normY) * HEAD_STRETCH * lean - Math.abs(normX) * HEAD_STRETCH * lean * 0.5,
+            svgOrigin: '0 0',
+            duration, ease,
+          }, '<');
+        }
+
+        function faceCenter(duration = 0.35) {
+          tl.to(dot, { attr: { cx: -EYE_SPREAD, cy: 0 }, duration, ease: 'power2.inOut' }, '>');
+          tl.to(dotR, { attr: { cx: EYE_SPREAD, cy: 0 }, duration, ease: 'power2.inOut' }, '<');
+          const faceEl = version === 'v1' ? smile : otterFace;
+          tl.to(faceEl, { x: 0, y: 0, duration, ease: 'power2.inOut' }, '<');
+          tl.to(ringUnit, { x: 0, y: 0, scaleX: 1, scaleY: 1, svgOrigin: '0 0', duration, ease: 'power2.inOut' }, '<');
+        }
+
+        // Gaze choreography
+        faceGaze(GAZE_R * 0.7, -3, 0.4, 'power2.inOut'); pause(0.6);
+        faceGaze(-5, -GAZE_R * 0.6, 0.5, 'power1.inOut'); pause(0.7);
+
+        // Look at camera — maybe wink (25% chance, left eye only)
+        faceCenter(0.3);
+        pause(0.2);
+        tl.call(() => {
+          if (Math.random() < 0.25) {
+            // Wink left eye: hide dot, show U-line at left eye position
+            const lx = parseFloat(dot.getAttribute('cx'));
+            const ly = parseFloat(dot.getAttribute('cy'));
+            winkLine.setAttribute('stroke', getPurpleColor());
+            gsap.set(winkLine, { x: lx, y: ly });
+            // Quick wink sequence
+            gsap.timeline()
+              .to(dot, { attr: { r: 0 }, duration: 0.06, ease: 'power2.in' })
+              .to(winkLine, { opacity: 1, duration: 0.01 }, '<0.03')
+              .to({}, { duration: 0.2 }) // hold wink
+              .to(winkLine, { opacity: 0, duration: 0.06 })
+              .to(dot, { attr: { r: EYE_SIZE }, duration: 0.1, ease: 'power2.out' }, '<0.03');
+          }
+        });
+        pause(0.5);
+
+        faceCenter(); pause(0.4);
+        faceGaze(0, GAZE_R * 0.5, 0.4, 'power2.inOut'); pause(0.4);
+        faceGaze(GAZE_R * 0.8, 3, 0.5, 'power1.inOut'); pause(0.4);
+        faceGaze(-GAZE_R * 0.8, 3, 0.7, 'power1.inOut'); pause(0.3);
+        faceGaze(0, -GAZE_R * 0.7, 0.3, 'power2.out'); pause(0.6);
+        faceGaze(3, GAZE_R * 0.4, 0.45, 'power1.inOut'); pause(0.3);
+
+        // Look at camera — maybe wink again (25% chance, left eye)
+        faceCenter(0.3);
+        pause(0.3);
+        tl.call(() => {
+          if (Math.random() < 0.25) {
+            const lx = parseFloat(dot.getAttribute('cx'));
+            const ly = parseFloat(dot.getAttribute('cy'));
+            winkLine.setAttribute('stroke', getPurpleColor());
+            gsap.set(winkLine, { x: lx, y: ly });
+            gsap.timeline()
+              .to(dot, { attr: { r: 0 }, duration: 0.06, ease: 'power2.in' })
+              .to(winkLine, { opacity: 1, duration: 0.01 }, '<0.03')
+              .to({}, { duration: 0.2 })
+              .to(winkLine, { opacity: 0, duration: 0.06 })
+              .to(dot, { attr: { r: EYE_SIZE }, duration: 0.1, ease: 'power2.out' }, '<0.03');
+          }
+        });
+        pause(0.4);
+
+        // Loop
+        const faceGazeEnd = tl.duration();
+        tl.add(() => { tl.seek(faceGazeStart); }, faceGazeEnd);
+
+        return tl;
+      }
+
+      function createResolveTimeline() {
+        const tl = gsap.timeline();
+        if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
+
+        // Reset head stretch + hide face features
+        tl.to(ringUnit, { scaleX: 1, scaleY: 1, x: 0, y: 0, svgOrigin: '0 0', duration: 0.2, ease: 'power2.out' });
+        tl.to(smile, { opacity: 0, x: 0, y: 0, duration: 0.15, ease: 'power2.in' }, '<');
+        tl.to(otterFace, { opacity: 0, x: 0, y: 0, duration: 0.15, ease: 'power2.in' }, '<');
+
+        // Eyes come together
+        tl.to(dot, { attr: { cx: -5, cy: 0 }, duration: 0.25, ease: 'power2.inOut' }, '<');
+        tl.to(dotR, { attr: { cx: 5, cy: 0 }, duration: 0.25, ease: 'power2.inOut' }, '<');
+
+        // Show blob
+        tl.call(() => { blob.setAttribute('fill', getPurpleColor()); });
+        tl.to(blob, { opacity: 1, attr: { rx: 28, ry: 16 }, duration: 0.01 }, '>');
+
+        // Merge
+        tl.to(dot, { attr: { r: 0 }, duration: 0.15, ease: 'power2.in' }, '>');
+        tl.to(dotR, { attr: { r: 0 }, duration: 0.15, ease: 'power2.in' }, '<');
+        tl.to(blob, { attr: { rx: 28, ry: 28 }, duration: 0.25, ease: 'power2.inOut' }, '>');
+
+        // Swap to real dot
+        tl.call(() => {
+          gsap.set(blob, { opacity: 0 });
+          gsap.set(dot, { attr: { cx: 0, cy: 0, r: 28 } });
+        });
+
+        // Resolve: ring → bean
+        tl.to(ringUnit, { x: EYE.x, y: EYE.y, duration: 0.7, ease: 'power2.inOut' });
+        tl.to(dot, { attr: { cx: EYE.x, cy: EYE.y }, duration: 0.7, ease: 'power2.inOut' }, '<');
+        tl.to(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}`, duration: 0.7, ease: 'power2.inOut' }, '<');
+
+        return tl;
+      }
+
+      reset();
+
+      const btn = cardEl.querySelector('[data-action="think"]');
+      const versionSelect = cardEl.querySelector('[data-role="version"]');
+      const versionDesc = cardEl.querySelector('[data-role="version-desc"]');
+      btn.className = 'btn-go';
+
+      const versionDescriptions = {
+        v1: 'Smiley face + head stretch',
+        v2: 'Otter face with whiskers',
+      };
+
+      if (versionSelect && versionDesc) {
+        versionSelect.addEventListener('change', () => {
+          versionDesc.textContent = versionDescriptions[versionSelect.value] || '';
+        });
+      }
+
+      function setStart() {
+        btn.textContent = 'Start';
+        btn.dataset.action = 'think';
+        btn.className = 'btn-go';
+      }
+
+      btn.addEventListener('click', () => {
+        if (btn.dataset.action === 'think') {
+          reset();
+          activeVersion = versionSelect ? versionSelect.value : 'v1';
+          thinkingTl = createThinkingTimeline(activeVersion);
+          btn.textContent = 'End';
+          btn.dataset.action = 'resolve';
+          btn.className = 'btn-stop';
+        } else {
+          const resolveTl = createResolveTimeline();
+          resolveTl.eventCallback('onComplete', setStart);
+        }
+      });
+
+      return { createThinkingTimeline, createResolveTimeline, reset, container };
+    }
+
+    const board5 = createArtboard5(document.getElementById('card-5'));
 
     /* ── THEME TOGGLE ── */
     const themeToggle = document.getElementById('theme-toggle');
@@ -1242,6 +1868,24 @@
         } else if (fill === oldPurple || fill === '#3D0099' || fill === '#9B59E1') {
           el.setAttribute('fill', pCol);
           el.setAttribute('stroke', pCol);
+        }
+      });
+
+      // All remaining SVG circles/ellipses/paths with purple fill or stroke
+      document.querySelectorAll('svg circle, svg ellipse, svg path, svg line').forEach(el => {
+        const fill = el.getAttribute('fill');
+        const stroke = el.getAttribute('stroke');
+        if (fill === oldPurple || fill === '#3D0099' || fill === '#9B59E1') {
+          el.setAttribute('fill', pCol);
+        }
+        if (stroke === oldPurple || stroke === '#3D0099' || stroke === '#9B59E1') {
+          el.setAttribute('stroke', pCol);
+        }
+        if (fill === oldWhite || fill === 'white' || fill === '#1a1a1a') {
+          el.setAttribute('fill', wCol);
+        }
+        if (stroke === oldWhite || stroke === 'white' || stroke === '#1a1a1a') {
+          el.setAttribute('stroke', wCol);
         }
       });
     }
