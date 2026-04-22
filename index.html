@@ -7,42 +7,141 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    :root {
+      --bg: #f5f5f5;
+      --bg-card: #fff;
+      --bg-card-border: #e0e0e0;
+      --text: #222;
+      --text-muted: #777;
+      --text-faint: #999;
+      --text-label: #aaa;
+      --purple: #3D0099;
+      --logo-white: white;
+      --controls-bg: #fff;
+      --controls-border: #e0e0e0;
+      --btn-border: #ddd;
+      --btn-text: #555;
+      --size-btn-border: #ddd;
+      --size-btn-text: #777;
+      --speed-text: #777;
+      --speed-value: #333;
+    }
+
+    .dark {
+      --bg: #111;
+      --bg-card: #1a1a1a;
+      --bg-card-border: #2a2a2a;
+      --text: #eee;
+      --text-muted: #999;
+      --text-faint: #666;
+      --text-label: #555;
+      --purple: #9B59E1;
+      --logo-white: #1a1a1a;
+      --controls-bg: #1a1a1a;
+      --controls-border: #222;
+      --btn-border: #333;
+      --btn-text: #ccc;
+      --size-btn-border: #333;
+      --size-btn-text: #888;
+      --speed-text: #888;
+      --speed-value: #ccc;
+    }
+
     body {
-      background: #f5f5f5;
-      color: #222;
+      background: var(--bg);
+      color: var(--text);
       font-family: system-ui, -apple-system, sans-serif;
       min-height: 100vh;
-      padding: 48px 40px 80px;
-      max-width: 1280px;
+      padding: 40px 40px 40px;
+      max-width: 1080px;
       margin: 0 auto;
+      transition: background 0.3s, color 0.3s;
     }
 
     /* ── HEADER ── */
     .page-header {
-      margin-bottom: 48px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-header .title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
     }
 
     .page-header .subtitle {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: #999;
-      margin-bottom: 6px;
+      color: var(--text-faint);
     }
 
     .page-header h1 {
-      font-size: 28px;
+      font-size: 22px;
       font-weight: 700;
-      color: #222;
+      color: var(--text);
+    }
+
+    .page-header .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .page-header .speed-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--speed-text);
+      font-weight: 500;
+    }
+
+    .page-header .speed-group input[type="range"] {
+      width: 100px;
+      accent-color: var(--purple);
+    }
+
+    .page-header .speed-value {
+      min-width: 32px;
+      color: var(--speed-value);
+    }
+
+    .page-header .size-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .page-header .size-group button {
+      padding: 3px 8px;
+      border: 1.5px solid var(--size-btn-border);
+      border-radius: 4px;
+      background: var(--bg-card);
+      color: var(--size-btn-text);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .page-header .size-group button.active,
+    .page-header .size-group button:hover {
+      border-color: var(--purple);
+      color: var(--purple);
     }
 
     /* ── GRID ── */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 48px 40px;
+      gap: 24px;
       max-width: 960px;
+      margin: 0 auto;
     }
 
     @media (max-width: 768px) {
@@ -54,43 +153,50 @@
 
     /* ── CARD ── */
     .card {
-      display: grid;
-      grid-template-rows: auto auto 60px 240px auto auto;
-      gap: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: background 0.3s, border-color 0.3s;
     }
 
     .card-label {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       font-family: 'SF Mono', 'Fira Code', monospace;
     }
 
-    .card-label.purple { color: #3D0099; }
+    .card-label.purple { color: var(--purple); }
     .card-label.green  { color: #059669; }
 
     .card h2 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
-      color: #222;
+      color: var(--text);
+      margin-top: -4px;
     }
 
     .card p {
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.5;
-      color: #777;
+      color: var(--text-muted);
+      margin-top: -4px;
     }
 
     /* ── DEMO AREA ── */
     .demo {
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 16px;
+      background: var(--bg);
+      border-radius: 12px;
+      transition: background 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 240px;
+      min-height: 180px;
       position: relative;
     }
 
@@ -102,59 +208,63 @@
     .card-controls {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      padding-top: 4px;
     }
 
     .card-controls button {
-      padding: 6px 16px;
-      border: 1.5px solid #ddd;
-      border-radius: 20px;
-      background: #fff;
-      color: #555;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-      min-width: 120px;
+      transition: background 0.2s, color 0.2s;
+      min-width: 100px;
       text-align: center;
     }
 
-    .card-controls button:hover {
-      border-color: #3D0099;
-      color: #3D0099;
+    .card-controls select {
+      padding: 8px 12px;
+      border: 1.5px solid var(--btn-border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      transition: border-color 0.2s;
+    }
+
+    .card-controls select:hover {
+      border-color: var(--purple);
     }
 
     .card-controls button.active {
-      border-color: #3D0099;
-      background: #3D0099;
+      border-color: var(--purple);
+      background: var(--purple);
       color: #fff;
     }
 
     .card-controls button.btn-go {
-      border-color: #059669;
-      color: #059669;
-    }
-    .card-controls button.btn-go:hover {
       background: #059669;
       color: #fff;
     }
+    .card-controls button.btn-go:hover {
+      background: #047857;
+    }
 
     .card-controls button.btn-stop {
-      border-color: #DC2626;
-      color: #DC2626;
-    }
-    .card-controls button.btn-stop:hover {
       background: #DC2626;
       color: #fff;
     }
+    .card-controls button.btn-stop:hover {
+      background: #B91C1C;
+    }
 
     .card-footer {
-      font-size: 12px;
-      color: #aaa;
-      text-align: center;
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      display: none;
     }
 
     /* ── GLOBAL CONTROLS ── */
@@ -163,13 +273,14 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #fff;
-      border-top: 1px solid #e0e0e0;
-      padding: 12px 40px;
+      background: var(--controls-bg);
+      border-top: 1px solid var(--controls-border);
+      transition: background 0.3s, border-color 0.3s;
+      padding: 10px 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 24px;
+      gap: 20px;
       z-index: 10;
     }
 
@@ -178,18 +289,63 @@
       align-items: center;
       gap: 8px;
       font-size: 13px;
-      color: #777;
+      color: var(--speed-text);
       font-weight: 500;
     }
 
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-faint);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .theme-switch .track {
+      width: 32px;
+      height: 18px;
+      border-radius: 9px;
+      background: var(--btn-border);
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .theme-switch .track .knob {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: white;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .dark .theme-switch .track {
+      background: var(--purple);
+    }
+
+    .dark .theme-switch .track .knob {
+      left: 16px;
+    }
+
+    .theme-switch .label-light { color: var(--text-muted); }
+    .theme-switch .label-dark { color: var(--text-faint); }
+    .dark .theme-switch .label-light { color: var(--text-faint); }
+    .dark .theme-switch .label-dark { color: var(--text-muted); }
+
     .global-controls input[type="range"] {
       width: 120px;
-      accent-color: #3D0099;
+      accent-color: var(--purple);
     }
 
     .global-controls .speed-value {
       min-width: 32px;
-      color: #333;
+      color: var(--speed-value);
     }
 
     .global-controls .size-group {
@@ -200,10 +356,10 @@
 
     .global-controls .size-group button {
       padding: 4px 10px;
-      border: 1.5px solid #ddd;
+      border: 1.5px solid var(--size-btn-border);
       border-radius: 6px;
-      background: #fff;
-      color: #777;
+      background: var(--bg-card);
+      color: var(--size-btn-text);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
@@ -212,15 +368,15 @@
 
     .global-controls .size-group button.active,
     .global-controls .size-group button:hover {
-      border-color: #3D0099;
-      color: #3D0099;
+      border-color: var(--purple);
+      color: var(--purple);
     }
 
     .page-footer {
       margin-top: 48px;
       text-align: center;
       font-size: 12px;
-      color: #bbb;
+      color: var(--text-label);
       font-family: 'SF Mono', 'Fira Code', monospace;
     }
   </style>
@@ -228,8 +384,27 @@
 <body>
 
   <header class="page-header">
-    <div class="subtitle">Oddle Logo</div>
-    <h1>Animation Playground</h1>
+    <div class="title-group">
+      <h1>Animation Playground</h1>
+      <span class="subtitle">Oddle Logo</span>
+    </div>
+    <div class="header-controls">
+      <div class="size-group">
+        <button data-size="48">48</button>
+        <button data-size="80" class="active">80</button>
+        <button data-size="120">120</button>
+      </div>
+      <div class="speed-group">
+        <span>Speed</span>
+        <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1.8" />
+        <span class="speed-value" id="speed-label">1.8x</span>
+      </div>
+      <div class="theme-switch" id="theme-toggle">
+        <span class="label-light">Light</span>
+        <div class="track"><div class="knob"></div></div>
+        <span class="label-dark">Dark</span>
+      </div>
+    </div>
   </header>
 
   <div class="grid">
@@ -244,6 +419,9 @@
       </div>
       <div class="card-controls">
         <button data-action="think">Start</button>
+        <select data-role="version">
+          <option value="v1" selected>Version 1</option>
+        </select>
       </div>
       <div class="card-footer">GSAP timeline · spiral windup · ring wiggle · bean scale reveal</div>
     </div>
@@ -258,6 +436,9 @@
       </div>
       <div class="card-controls">
         <button data-action="think">Start</button>
+        <select data-role="version">
+          <option value="v1" selected>Version 1</option>
+        </select>
       </div>
       <div class="card-footer">GSAP timeline · in-logo spin · un-resolve · wiggle · resolve</div>
     </div>
@@ -272,30 +453,26 @@
       </div>
       <div class="card-controls">
         <button data-action="think">Start</button>
+        <select data-role="version">
+          <option value="v1" selected>Version 1</option>
+        </select>
       </div>
       <div class="card-footer">GSAP timeline · expanding dot pulse · psychedelic loop</div>
     </div>
 
   </div>
 
-  <footer class="page-footer">GSAP 3.12 · SVG · Vanilla JS</footer>
+  <!-- footer removed for cleaner layout -->
 
-  <!-- GLOBAL CONTROLS -->
-  <div class="global-controls">
-    <div class="size-group">
-      <button data-size="48">48</button>
-      <button data-size="80" class="active">80</button>
-      <button data-size="120">120</button>
-    </div>
-    <div class="speed-group">
-      <span>Speed</span>
-      <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1.8" />
-      <span class="speed-value" id="speed-label">1x</span>
-    </div>
-  </div>
+  <!-- controls moved to header -->
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
   <script>
+    // Theme state (accessible by all factories)
+    let isDark = false;
+    function getWhiteColor() { return isDark ? '#1a1a1a' : 'white'; }
+    function getPurpleColor() { return isDark ? '#9B59E1' : '#3D0099'; }
+
     const BEAN_PATH = 'M214.485 25.738C180.168 -8.579 124.234 -8.579 89.917 25.738L25.738 89.917C-8.579 124.234 -8.579 180.168 25.738 214.485C60.056 248.803 115.989 248.802 150.306 214.485L214.485 150.306C248.802 115.989 248.803 60.055 214.485 25.738Z';
     const ORBIT_RADIUS = 34;
     const RING_WIGGLE = 3;
@@ -317,7 +494,7 @@
         </g>
         <g data-role="ring-unit">
           <circle cx="0" cy="0" r="73" fill="none" stroke="#3D0099" stroke-width="24" />
-          <circle cx="0" cy="0" r="61" fill="white" />
+          <circle data-role="ring-bg" cx="0" cy="0" r="61" fill="white" />
         </g>
         <circle data-role="dot" cx="0" cy="0" r="28" fill="#3D0099" />
       `;
@@ -673,7 +850,7 @@
 
       function resetPulses() {
         pulseEls.forEach((el, i) => {
-          const color = i % 2 === 0 ? '#3D0099' : 'white';
+          const color = i % 2 === 0 ? getPurpleColor() : getWhiteColor();
           el.setAttribute('fill', color);
           el.setAttribute('stroke', color);
           el.setAttribute('stroke-width', '1.5');
@@ -751,7 +928,7 @@
               const progress = Math.max(0, Math.min(1, (t - circleStart) / pulseDuration));
               const r = maxR * progress;
 
-              const color = i % 2 === 0 ? '#3D0099' : 'white';
+              const color = i % 2 === 0 ? getPurpleColor() : getWhiteColor();
               el.setAttribute('r', r);
               el.setAttribute('fill', color);
               el.setAttribute('stroke', color);
@@ -884,10 +1061,51 @@
     const board2 = createArtboard2(document.getElementById('card-2'));
     const board3 = createArtboard3(document.getElementById('card-3'));
 
+    /* ── THEME TOGGLE ── */
+    const themeToggle = document.getElementById('theme-toggle');
+
+    function updateSvgTheme() {
+      const wCol = getWhiteColor();
+      const pCol = getPurpleColor();
+      const oldWhite = isDark ? 'white' : '#1a1a1a';
+      const oldPurple = isDark ? '#3D0099' : '#9B59E1';
+
+      // Update all SVG elements
+      document.querySelectorAll('[data-role="ring-bg"]').forEach(el => el.setAttribute('fill', wCol));
+      document.querySelectorAll('[data-role="ring-stroke"]').forEach(el => el.setAttribute('stroke', pCol));
+      document.querySelectorAll('[data-role="dot"]').forEach(el => el.setAttribute('fill', pCol));
+
+      // Tail paths
+      document.querySelectorAll('[data-role="tail-group"] path').forEach(el => el.setAttribute('fill', pCol));
+
+      // Artboard 1 ring (no data-role on stroke)
+      document.querySelectorAll('g[data-role="ring-unit"] circle[fill="none"]').forEach(el => {
+        el.setAttribute('stroke', pCol);
+      });
+
+      // Pulse circles: swap colors
+      document.querySelectorAll('[data-role^="p"]').forEach(el => {
+        const fill = el.getAttribute('fill');
+        if (fill === oldWhite || fill === 'white' || fill === '#1a1a1a') {
+          el.setAttribute('fill', wCol);
+          el.setAttribute('stroke', wCol);
+        } else if (fill === oldPurple || fill === '#3D0099' || fill === '#9B59E1') {
+          el.setAttribute('fill', pCol);
+          el.setAttribute('stroke', pCol);
+        }
+      });
+    }
+
+    themeToggle.addEventListener('click', () => {
+      isDark = !isDark;
+      document.body.classList.toggle('dark', isDark);
+      updateSvgTheme();
+    });
+
     /* ── GLOBAL SIZE ── */
-    document.querySelectorAll('.size-group button').forEach(btn => {
+    document.querySelectorAll('.page-header .size-group button').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelector('.size-group .active').classList.remove('active');
+        document.querySelector('.page-header .size-group .active').classList.remove('active');
         btn.classList.add('active');
         const s = btn.dataset.size + 'px';
         document.querySelectorAll('.logo-container').forEach(c => { c.style.width = s; c.style.height = s; });
