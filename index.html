@@ -13,6 +13,8 @@
       font-family: system-ui, -apple-system, sans-serif;
       min-height: 100vh;
       padding: 48px 40px 80px;
+      max-width: 1280px;
+      margin: 0 auto;
     }
 
     /* ── HEADER ── */
@@ -41,6 +43,13 @@
       grid-template-columns: 1fr 1fr;
       gap: 48px 40px;
       max-width: 960px;
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+      }
     }
 
     /* ── CARD ── */
@@ -108,6 +117,8 @@
       font-weight: 500;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s, background 0.2s;
+      min-width: 120px;
+      text-align: center;
     }
 
     .card-controls button:hover {
@@ -118,6 +129,24 @@
     .card-controls button.active {
       border-color: #3D0099;
       background: #3D0099;
+      color: #fff;
+    }
+
+    .card-controls button.btn-go {
+      border-color: #059669;
+      color: #059669;
+    }
+    .card-controls button.btn-go:hover {
+      background: #059669;
+      color: #fff;
+    }
+
+    .card-controls button.btn-stop {
+      border-color: #DC2626;
+      color: #DC2626;
+    }
+    .card-controls button.btn-stop:hover {
+      background: #DC2626;
       color: #fff;
     }
 
@@ -205,38 +234,46 @@
 
   <div class="grid">
 
-    <!-- ARTBOARD 1 -->
-    <div class="card" id="card-1">
-      <span class="card-label purple">01 — Thinking + Resolve</span>
+    <!-- ARTBOARD 1 (hidden) -->
+    <div class="card" id="card-1" style="display:none;">
+      <span class="card-label purple">00 — Thinking + Resolve</span>
       <h2>Spinner to Logo</h2>
       <p>Dot spirals outward from center, orbits inside the ring with physics wiggle, then resolves into the full Oddle bean logo.</p>
       <div class="demo">
-        <div class="logo-container" style="width:120px;height:120px;"></div>
+        <div class="logo-container" style="width:80px;height:80px;"></div>
       </div>
       <div class="card-controls">
-        <button data-action="think">Thinking</button>
-        <button data-action="resolve">Resolve</button>
-        <button data-action="full">Full Sequence</button>
-        <button data-action="reset">Reset</button>
+        <button data-action="think">Start</button>
       </div>
       <div class="card-footer">GSAP timeline · spiral windup · ring wiggle · bean scale reveal</div>
     </div>
 
     <!-- ARTBOARD 2 -->
     <div class="card" id="card-2">
-      <span class="card-label green">02 — Logo Thinking</span>
+      <span class="card-label purple">01 — Logo Thinking</span>
       <h2>In-Logo Spinner</h2>
       <p>Full logo is already resolved. The dot orbits inside the eye area as a thinking/loading indicator. No wiggle.</p>
       <div class="demo">
-        <div class="logo-container" style="width:120px;height:120px;"></div>
+        <div class="logo-container" style="width:80px;height:80px;"></div>
       </div>
       <div class="card-controls">
-        <button data-action="think">Thinking</button>
-        <button data-action="resolve">Resolve</button>
-        <button data-action="full">Full Sequence</button>
-        <button data-action="reset">Reset</button>
+        <button data-action="think">Start</button>
       </div>
       <div class="card-footer">GSAP timeline · in-logo spin · un-resolve · wiggle · resolve</div>
+    </div>
+
+    <!-- ARTBOARD 3 -->
+    <div class="card" id="card-3">
+      <span class="card-label green">02 — Psychedelic Pulse</span>
+      <h2>Growing Eye</h2>
+      <p>The dot grows to fill the ring while a new dot replaces it — alternating purple/white creates a hypnotic pulsing tunnel effect.</p>
+      <div class="demo">
+        <div class="logo-container" style="width:80px;height:80px;"></div>
+      </div>
+      <div class="card-controls">
+        <button data-action="think">Start</button>
+      </div>
+      <div class="card-footer">GSAP timeline · expanding dot pulse · psychedelic loop</div>
     </div>
 
   </div>
@@ -247,12 +284,12 @@
   <div class="global-controls">
     <div class="size-group">
       <button data-size="48">48</button>
-      <button data-size="80">80</button>
-      <button data-size="120" class="active">120</button>
+      <button data-size="80" class="active">80</button>
+      <button data-size="120">120</button>
     </div>
     <div class="speed-group">
       <span>Speed</span>
-      <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1.5" />
+      <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1.8" />
       <span class="speed-value" id="speed-label">1x</span>
     </div>
   </div>
@@ -567,33 +604,285 @@
       // Set initial state: full logo
       reset();
 
-      // Wire up buttons
-      cardEl.querySelectorAll('.card-controls button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const action = btn.dataset.action;
-          if (action === 'think') {
-            reset();
-            thinkingTl = createThinkingTimeline(3);
-          }
-          if (action === 'resolve') {
-            createResolveTimeline();
-          }
-          if (action === 'full') {
-            reset();
-            thinkingTl = createThinkingTimeline(3);
-            // Auto-resolve after 5 seconds of spinning
-            gsap.delayedCall(5, () => { createResolveTimeline(); });
-          }
-          if (action === 'reset') { reset(); }
-        });
+      // Wire up Start/End toggle
+      const btn = cardEl.querySelector('[data-action="think"]');
+      btn.className = 'btn-go';
+
+      function setStart() {
+        btn.textContent = 'Start';
+        btn.dataset.action = 'think';
+        btn.className = 'btn-go';
+      }
+
+      btn.addEventListener('click', () => {
+        if (btn.dataset.action === 'think') {
+          reset();
+          thinkingTl = createThinkingTimeline(3);
+          btn.textContent = 'End';
+          btn.dataset.action = 'resolve';
+          btn.className = 'btn-stop';
+        } else {
+          const resolveTl = createResolveTimeline();
+          resolveTl.eventCallback('onComplete', setStart);
+        }
       });
 
       return { createThinkingTimeline, reset, container };
     }
 
+    /* ── ARTBOARD 3 FACTORY: Psychedelic Pulse ── */
+    function createArtboard3(cardEl) {
+      const container = cardEl.querySelector('.logo-container');
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '-120 -120 240 240');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.overflow = 'visible';
+
+      // 4 pulse circles for concentric ring effect
+      svg.innerHTML = `
+        <g data-role="tail-group">
+          <path transform="translate(-120.5,-120.5)" d="${BEAN_PATH}" fill="#3D0099" />
+        </g>
+        <g data-role="ring-unit">
+          <circle data-role="ring-stroke" cx="0" cy="0" r="73" fill="none" stroke="#3D0099" stroke-width="24" />
+          <circle data-role="ring-bg" cx="0" cy="0" r="61" fill="white" />
+          <circle data-role="p0" cx="0" cy="0" r="0" fill="#3D0099" />
+          <circle data-role="p1" cx="0" cy="0" r="0" fill="white" />
+          <circle data-role="p2" cx="0" cy="0" r="0" fill="#3D0099" />
+          <circle data-role="p3" cx="0" cy="0" r="0" fill="white" />
+        </g>
+      `;
+      container.appendChild(svg);
+
+      const tailGroup = svg.querySelector('[data-role="tail-group"]');
+      const ringUnit = svg.querySelector('[data-role="ring-unit"]');
+      const ringStroke = svg.querySelector('[data-role="ring-stroke"]');
+      const ringBg = svg.querySelector('[data-role="ring-bg"]');
+      const pulseEls = [
+        svg.querySelector('[data-role="p0"]'),
+        svg.querySelector('[data-role="p1"]'),
+        svg.querySelector('[data-role="p2"]'),
+        svg.querySelector('[data-role="p3"]'),
+      ];
+
+      const FULL_R = 85;
+      const DOT_R = 28;
+      let thinkingTl = null;
+
+      function resetPulses() {
+        pulseEls.forEach((el, i) => {
+          const color = i % 2 === 0 ? '#3D0099' : 'white';
+          el.setAttribute('fill', color);
+          el.setAttribute('stroke', color);
+          el.setAttribute('stroke-width', '1.5');
+          el.setAttribute('r', i === 0 ? DOT_R : 0);
+          el.setAttribute('cx', 0);
+          el.setAttribute('cy', 0);
+        });
+      }
+
+      function reset() {
+        if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
+        resolveRequested = false;
+        resolveFromIndex = -1;
+        gsap.killTweensOf([tailGroup, ringUnit, ringStroke, ...pulseEls]);
+        gsap.set(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}` });
+        gsap.set(ringUnit, { x: EYE.x, y: EYE.y });
+        ringStroke.setAttribute('opacity', '1');
+        resetPulses();
+      }
+
+      function createThinkingTimeline() {
+        const tl = gsap.timeline();
+
+        // ── ALL-IN-ONE: pulse + shape-shift driven by single time ──
+        // Pulse runs from t=0. Shape-shift overlaps naturally.
+        const INNER_R = 61;
+        const pulseDuration = 0.9;  // time for one circle to grow to max
+        const stagger = 0.55;       // new circle every 0.55s
+        const transStart = 0.3;     // shape-shift starts (pill → circle)
+        const transEnd = 1.5;       // shape-shift complete
+        const ringFadeStart = 0.6;  // ring stroke starts fading
+        const ringFadeDur = 0.5;    // ring stroke fade duration
+        const totalTime = stagger * 60;
+
+        const state = { time: 0 };
+
+        tl.to(state, {
+          time: totalTime, duration: totalTime, ease: 'none',
+          onUpdate() {
+            const t = state.time;
+
+            // ── Shape-shift: center EYE→origin, tail shrinks ──
+            if (t >= transStart) {
+              const sp = Math.min(1, (t - transStart) / (transEnd - transStart));
+              const e = sp * sp * (3 - 2 * sp); // smoothstep
+              gsap.set(ringUnit, { x: EYE.x * (1 - e), y: EYE.y * (1 - e) });
+            }
+
+            // ── Ring stroke fade ──
+            if (t >= ringFadeStart) {
+              const fp = Math.min(1, (t - ringFadeStart) / ringFadeDur);
+              ringStroke.setAttribute('opacity', 1 - fp);
+            }
+
+            // ── Max radius: transitions from INNER_R → FULL_R during shape-shift ──
+            let maxR;
+            if (t < transStart) {
+              maxR = INNER_R;
+            } else if (t < transEnd) {
+              const mp = (t - transStart) / (transEnd - transStart);
+              const me = mp * mp * (3 - 2 * mp);
+              maxR = INNER_R + (FULL_R - INNER_R) * me;
+            } else {
+              maxR = FULL_R;
+            }
+
+            // ── Concentric pulse circles ──
+            const latestIndex = Math.floor(t / stagger);
+            const startIndex = Math.max(0, latestIndex - 3);
+
+            for (let slot = 0; slot < 4; slot++) {
+              const i = startIndex + slot;
+              const el = pulseEls[slot];
+              const circleStart = i * stagger;
+              const progress = Math.max(0, Math.min(1, (t - circleStart) / pulseDuration));
+              const r = maxR * progress;
+
+              const color = i % 2 === 0 ? '#3D0099' : 'white';
+              el.setAttribute('r', r);
+              el.setAttribute('fill', color);
+              el.setAttribute('stroke', color);
+              el.setAttribute('stroke-width', '1.5');
+            }
+
+            // ── Resolve: organic ring reconstruction ──
+            // When requested, wait for next even (purple) cycle to start,
+            // then cap: purple→FULL_R, white→INNER_R, purple→DOT_R
+            if (resolveRequested && resolveFromIndex === -1 && maxR === FULL_R) {
+              // Find the next even index that just started (progress < 0.1)
+              for (let slot = 0; slot < 4; slot++) {
+                const ci = startIndex + slot;
+                const cs = ci * stagger;
+                const cp = Math.max(0, (t - cs) / pulseDuration);
+                if (ci % 2 === 0 && cp > 0 && cp < 0.15) {
+                  resolveFromIndex = ci;
+                  break;
+                }
+              }
+            }
+
+            // If in resolve phase, cap radii for the final 3 circles
+            if (resolveFromIndex >= 0) {
+              for (let slot = 0; slot < 4; slot++) {
+                const ci = startIndex + slot;
+                const el = pulseEls[slot];
+                const curR = parseFloat(el.getAttribute('r')) || 0;
+
+                if (ci === resolveFromIndex) {
+                  // Purple: cap at FULL_R (same as normal, just ensuring)
+                } else if (ci === resolveFromIndex + 1) {
+                  // White: cap at INNER_R
+                  if (curR > INNER_R) el.setAttribute('r', INNER_R);
+                } else if (ci === resolveFromIndex + 2) {
+                  // Purple dot: cap at DOT_R
+                  if (curR > DOT_R) el.setAttribute('r', DOT_R);
+
+                  // Check if this purple dot has reached DOT_R → trigger shape-shift
+                  if (curR >= DOT_R * 0.95) {
+                    resolveRequested = false;
+                    resolveFromIndex = -1;
+                    tl.kill();
+                    thinkingTl = null;
+                    doShapeShift();
+                    return;
+                  }
+                } else if (ci > resolveFromIndex + 2) {
+                  // Beyond the resolve trio: don't show
+                  el.setAttribute('r', 0);
+                }
+              }
+            }
+          },
+        });
+
+        // Tail shrinks (separate tween for scale, synced to transStart)
+        tl.to(tailGroup, {
+          scale: 0, svgOrigin: `${EYE.x} ${EYE.y}`,
+          duration: transEnd - transStart,
+          ease: 'power2.inOut',
+        }, transStart);
+
+        return tl;
+      }
+
+      // Resolve: just set the flag — the thinking onUpdate will detect the right moment
+      let resolveRequested = false;
+      let resolveFromIndex = -1;
+
+      function createResolveTimeline() {
+        resolveRequested = true;
+      }
+
+      // Shape-shift: called by thinking onUpdate when ring-like state is detected
+      let onShapeShiftComplete = null;
+
+      function doShapeShift() {
+        const tl = gsap.timeline();
+
+        tl.call(() => {
+          resetPulses();
+          ringStroke.setAttribute('opacity', '1');
+          gsap.set(ringUnit, { x: 0, y: 0 });
+        });
+
+        tl.to(ringUnit, { x: EYE.x, y: EYE.y, duration: 0.7, ease: 'power2.inOut' }, 0.05);
+        tl.to(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}`, duration: 0.7, ease: 'power2.inOut' }, '<');
+
+        tl.eventCallback('onComplete', () => {
+          if (onShapeShiftComplete) onShapeShiftComplete();
+        });
+      }
+
+      reset();
+
+      // Wire up buttons with swap behavior
+      const btnThink = cardEl.querySelector('[data-action="think"]');
+      const btnFull = cardEl.querySelector('[data-action="full"]');
+
+      // Wire up Start/End toggle
+      const btn = cardEl.querySelector('[data-action="think"]');
+      btn.className = 'btn-go';
+
+      function setStart() {
+        btn.textContent = 'Start';
+        btn.dataset.action = 'think';
+        btn.className = 'btn-go';
+      }
+
+      onShapeShiftComplete = setStart;
+
+      btn.addEventListener('click', () => {
+        if (btn.dataset.action === 'think') {
+          reset();
+          thinkingTl = createThinkingTimeline();
+          btn.textContent = 'End';
+          btn.dataset.action = 'resolve';
+          btn.className = 'btn-stop';
+        } else {
+          resolveRequested = true;
+        }
+      });
+
+      return { createThinkingTimeline, createResolveTimeline, reset, container };
+    }
+
     /* ── INIT ── */
     const board1 = createArtboard(document.getElementById('card-1'));
     const board2 = createArtboard2(document.getElementById('card-2'));
+    const board3 = createArtboard3(document.getElementById('card-3'));
 
     /* ── GLOBAL SIZE ── */
     document.querySelectorAll('.size-group button').forEach(btn => {
@@ -614,8 +903,8 @@
       gsap.globalTimeline.timeScale(ts);
     });
     // Set default speed
-    gsap.globalTimeline.timeScale(1.5);
-    speedLabel.textContent = '1.5x';
+    gsap.globalTimeline.timeScale(1.8);
+    speedLabel.textContent = '1.8x';
   </script>
 </body>
 </html>
