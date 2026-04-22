@@ -263,6 +263,13 @@
       background: #B91C1C;
     }
 
+    .version-desc {
+      font-size: 11px;
+      color: var(--text-faint);
+      text-align: right;
+      margin-top: -6px;
+    }
+
     .card-footer {
       display: none;
     }
@@ -428,9 +435,9 @@
 
     <!-- ARTBOARD 2 -->
     <div class="card" id="card-2">
-      <span class="card-label purple">01 — Logo Thinking</span>
-      <h2>In-Logo Spinner</h2>
-      <p>Full logo is already resolved. The dot orbits inside the eye area as a thinking/loading indicator. No wiggle.</p>
+      <span class="card-label purple">01 — Orbital Spinner</span>
+      <h2>Spinning Dot</h2>
+      <p>The logo transforms into a ring while the dot orbits inside it. Ideal for loading states where the brand stays recognizable.</p>
       <div class="demo">
         <div class="logo-container" style="width:80px;height:80px;"></div>
       </div>
@@ -438,16 +445,18 @@
         <button data-action="think">Start</button>
         <select data-role="version">
           <option value="v1" selected>Version 1</option>
+          <option value="v2">Version 2</option>
         </select>
       </div>
+      <div class="version-desc" data-role="version-desc">Ring wiggle + thinning effect</div>
       <div class="card-footer">GSAP timeline · in-logo spin · un-resolve · wiggle · resolve</div>
     </div>
 
     <!-- ARTBOARD 3 -->
     <div class="card" id="card-3">
-      <span class="card-label green">02 — Psychedelic Pulse</span>
-      <h2>Growing Eye</h2>
-      <p>The dot grows to fill the ring while a new dot replaces it — alternating purple/white creates a hypnotic pulsing tunnel effect.</p>
+      <span class="card-label green">02 — Pulsing Eye</span>
+      <h2>Pulsing Dots</h2>
+      <p>The dot pulses outward in alternating colours, creating a rhythmic breathing effect. Great for AI thinking or processing states.</p>
       <div class="demo">
         <div class="logo-container" style="width:80px;height:80px;"></div>
       </div>
@@ -457,6 +466,7 @@
           <option value="v1" selected>Version 1</option>
         </select>
       </div>
+      <div class="version-desc" data-role="version-desc">Clean expanding circles</div>
       <div class="card-footer">GSAP timeline · expanding dot pulse · psychedelic loop</div>
     </div>
 
@@ -641,9 +651,11 @@
 
       // All phases in one function — single onUpdate drives dot + ring together.
       // Phase A+B+C: spiral windup → un-resolve → looping spin (seamless)
-      function createThinkingTimeline() {
+      function createThinkingTimeline(version = 'v1') {
         const tl = gsap.timeline();
-        const angularSpeed = Math.PI * 2 / 0.6; // rad/s (constant throughout)
+        const angularSpeed = Math.PI * 2 / 0.6;
+        const useWiggle = version === 'v1';
+        const useThinning = version === 'v1';
 
         // Timing
         const windupEnd = 1.0;
@@ -658,7 +670,6 @@
             const t = abState.time;
             const angle = Math.PI / 2 + angularSpeed * t;
 
-            // Orbit radius: 0 → getOrbitRadius() over 0–windupEnd
             const maxR = getOrbitRadius();
             let radius;
             if (t < windupEnd) {
@@ -668,7 +679,6 @@
               radius = maxR;
             }
 
-            // Center shift: EYE → origin over transStart–transEnd
             let cx = EYE.x, cy = EYE.y;
             if (t > transStart) {
               const sp = Math.min(1, (t - transStart) / (transEnd - transStart));
@@ -680,7 +690,7 @@
 
             dot.setAttribute('cx', cx + Math.cos(angle) * radius);
             dot.setAttribute('cy', cy + Math.sin(angle) * radius);
-            updateRingVisuals();
+            if (useThinning) updateRingVisuals();
           },
         });
 
@@ -691,13 +701,15 @@
           ease: 'power2.inOut',
         }, transStart);
 
-        // Wiggle fades in midway through tail shrink
-        tl.to(wiggleState, { wiggle: 1, duration: 0.5, ease: 'power2.out' }, (transStart + transEnd) / 2);
+        // V1 only: wiggle + thinning
+        if (useWiggle) {
+          tl.to(wiggleState, { wiggle: 1, duration: 0.5, ease: 'power2.out' }, (transStart + transEnd) / 2);
+        }
+        if (useThinning) {
+          tl.to(ringState, { thin: 1, duration: 2.0, ease: 'power2.inOut' }, transEnd + 0.5);
+        }
 
-        // Ring thins gradually (starts 0.5s after perfect circle, takes 2s)
-        tl.to(ringState, { thin: 1, duration: 2.0, ease: 'power2.inOut' }, transEnd + 0.5);
-
-        // ── C: looping spin — dot always tracks ring inner edge ──
+        // ── C: looping spin ──
         const loopStartAngle = Math.PI / 2 + angularSpeed * transEnd;
         const loopState = { angle: 0 };
 
@@ -714,46 +726,79 @@
             dot.setAttribute('cx', dx);
             dot.setAttribute('cy', dy);
 
-            updateRingVisuals();
+            if (useThinning) updateRingVisuals();
 
-            const wx = dx * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
-            const wy = dy * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
-            gsap.set(ringUnit, { x: wx, y: wy });
+            if (useWiggle) {
+              const wx = dx * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
+              const wy = dy * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
+              gsap.set(ringUnit, { x: wx, y: wy });
+            }
           },
-        }, transEnd); // starts exactly when A+B ends — no gap
+        }, transEnd);
 
         return tl;
       }
+
+      // Track active version for resolve behavior
+      let activeVersion = 'v1';
 
       // Resolve — stop loop, wind down, spiral in, restore ring, grow bean
       function createResolveTimeline() {
         const tl = gsap.timeline();
         if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
 
-        // Capture current dot position
+        // Extra 0.4s of spinning before winding down
         const cx0 = parseFloat(dot.getAttribute('cx'));
         const cy0 = parseFloat(dot.getAttribute('cy'));
         const angle0 = Math.atan2(cy0, cx0);
-        const angularSpeed = Math.PI * 2 / 0.6;
+        const extraSpin = { angle: 0 };
+        const useWiggle = activeVersion === 'v1';
 
-        // Wind down wiggle + thicken ring + spiral in — all in one onUpdate
+        tl.to(extraSpin, {
+          angle: Math.PI * 2 * 0.6, duration: 0.4, ease: 'none',
+          onUpdate() {
+            const orbitR = getOrbitRadius();
+            const a = angle0 + extraSpin.angle;
+            dot.setAttribute('cx', Math.cos(a) * orbitR);
+            dot.setAttribute('cy', Math.sin(a) * orbitR);
+            if (useWiggle) {
+              const dx = Math.cos(a) * orbitR;
+              const dy = Math.sin(a) * orbitR;
+              const wx = dx * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
+              const wy = dy * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
+              gsap.set(ringUnit, { x: wx, y: wy });
+            }
+          },
+        });
+
+        const resolveStart = 0.4;
+        tl.call(() => {}, null, resolveStart); // sync point
+
+        const cx0r = { val: 0 }, cy0r = { val: 0 };
+        tl.call(() => {
+          cx0r.val = parseFloat(dot.getAttribute('cx'));
+          cy0r.val = parseFloat(dot.getAttribute('cy'));
+        }, null, resolveStart);
+
+        const angularSpeed = Math.PI * 2 / 0.6;
         const resolveState = { progress: 0 };
-        const resolveDuration = 0.8;
+        const resolveDuration = 1.4;
 
         tl.to(resolveState, {
-          progress: 1, duration: resolveDuration, ease: 'power2.out',
+          progress: 1, duration: resolveDuration, ease: 'power1.out',
           onUpdate() {
             const p = resolveState.progress;
 
             // Wiggle fades out
-            wiggleState.wiggle = Math.max(0, 1 - p * 2.5); // gone by p=0.4
+            wiggleState.wiggle = Math.max(0, 1 - p * 2.5);
 
             // Ring thickens back
-            ringState.thin = Math.max(0, 1 - p * 1.5); // normal by p=0.67
+            ringState.thin = Math.max(0, 1 - p * 1.5);
             updateRingVisuals();
 
             // Dot spirals inward (orbit shrinks, keeps spinning)
             const orbitR = getOrbitRadius() * (1 - p);
+            const angle0 = Math.atan2(cy0r.val, cx0r.val);
             const angle = angle0 + angularSpeed * resolveDuration * p;
             const dx = Math.cos(angle) * orbitR;
             const dy = Math.sin(angle) * orbitR;
@@ -783,7 +828,20 @@
 
       // Wire up Start/End toggle
       const btn = cardEl.querySelector('[data-action="think"]');
+      const versionSelect = cardEl.querySelector('[data-role="version"]');
+      const versionDesc = cardEl.querySelector('[data-role="version-desc"]');
       btn.className = 'btn-go';
+
+      const versionDescriptions = {
+        v1: 'Ring wiggle + thinning effect',
+        v2: 'Clean orbit, no wiggle',
+      };
+
+      if (versionSelect && versionDesc) {
+        versionSelect.addEventListener('change', () => {
+          versionDesc.textContent = versionDescriptions[versionSelect.value] || '';
+        });
+      }
 
       function setStart() {
         btn.textContent = 'Start';
@@ -794,7 +852,8 @@
       btn.addEventListener('click', () => {
         if (btn.dataset.action === 'think') {
           reset();
-          thinkingTl = createThinkingTimeline(3);
+          activeVersion = versionSelect ? versionSelect.value : 'v1';
+          thinkingTl = createThinkingTimeline(activeVersion);
           btn.textContent = 'End';
           btn.dataset.action = 'resolve';
           btn.className = 'btn-stop';
@@ -817,7 +876,7 @@
       svg.style.height = '100%';
       svg.style.overflow = 'visible';
 
-      // 4 pulse circles for concentric ring effect
+      // 4 pulse circles (V1) + 4 particle groups (V2)
       svg.innerHTML = `
         <g data-role="tail-group">
           <path transform="translate(-120.5,-120.5)" d="${BEAN_PATH}" fill="#3D0099" />
@@ -829,6 +888,10 @@
           <circle data-role="p1" cx="0" cy="0" r="0" fill="white" />
           <circle data-role="p2" cx="0" cy="0" r="0" fill="#3D0099" />
           <circle data-role="p3" cx="0" cy="0" r="0" fill="white" />
+          <g data-role="burst0"></g>
+          <g data-role="burst1"></g>
+          <g data-role="burst2"></g>
+          <g data-role="burst3"></g>
         </g>
       `;
       container.appendChild(svg);
@@ -843,6 +906,38 @@
         svg.querySelector('[data-role="p2"]'),
         svg.querySelector('[data-role="p3"]'),
       ];
+
+      // Burst particle groups (for V2)
+      const burstGroups = [
+        svg.querySelector('[data-role="burst0"]'),
+        svg.querySelector('[data-role="burst1"]'),
+        svg.querySelector('[data-role="burst2"]'),
+        svg.querySelector('[data-role="burst3"]'),
+      ];
+
+      // Pre-generate particles per burst group
+      const PARTICLES_PER_RING = 16;
+      const RINGS = 5;
+      const burstParticles = burstGroups.map(g => {
+        const particles = [];
+        for (let ring = 0; ring < RINGS; ring++) {
+          for (let j = 0; j < PARTICLES_PER_RING; j++) {
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            // Each particle has a fixed angle + slight random offset for organic feel
+            const baseAngle = (j / PARTICLES_PER_RING) * Math.PI * 2;
+            const angle = baseAngle + (Math.random() - 0.5) * 0.3;
+            const ringNorm = (ring + 0.3 + Math.random() * 0.7) / RINGS; // 0→1 normalized radial position
+            c.setAttribute('cx', '0');
+            c.setAttribute('cy', '0');
+            c.setAttribute('r', '0');
+            c.dataset.angle = angle;
+            c.dataset.ringNorm = ringNorm;
+            g.appendChild(c);
+            particles.push(c);
+          }
+        }
+        return particles;
+      });
 
       const FULL_R = 85;
       const DOT_R = 28;
@@ -860,6 +955,14 @@
         });
       }
 
+      let activeVersion = 'v1';
+
+      function hideBursts() {
+        burstParticles.forEach(particles => {
+          particles.forEach(p => p.setAttribute('r', '0'));
+        });
+      }
+
       function reset() {
         if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
         resolveRequested = false;
@@ -868,19 +971,22 @@
         gsap.set(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}` });
         gsap.set(ringUnit, { x: EYE.x, y: EYE.y });
         ringStroke.setAttribute('opacity', '1');
+        hideBursts();
         resetPulses();
       }
 
-      function createThinkingTimeline() {
+      function createThinkingTimeline(version = 'v1') {
         const tl = gsap.timeline();
+        const isBurst = version === 'v2';
 
         // ── ALL-IN-ONE: pulse + shape-shift driven by single time ──
         // Pulse runs from t=0. Shape-shift overlaps naturally.
         const INNER_R = 61;
         const pulseDuration = 0.9;  // time for one circle to grow to max
         const stagger = 0.55;       // new circle every 0.55s
-        const transStart = 0.3;     // shape-shift starts (pill → circle)
-        const transEnd = 1.5;       // shape-shift complete
+        const firstPulseDur = 0.6; // first dot grows faster
+        const transStart = firstPulseDur; // shape-shift starts after 1st pulse
+        const transEnd = transStart + 1.2; // shape-shift duration
         const ringFadeStart = 0.6;  // ring stroke starts fading
         const ringFadeDur = 0.5;    // ring stroke fade duration
         const totalTime = stagger * 60;
@@ -925,14 +1031,47 @@
               const i = startIndex + slot;
               const el = pulseEls[slot];
               const circleStart = i * stagger;
-              const progress = Math.max(0, Math.min(1, (t - circleStart) / pulseDuration));
-              const r = maxR * progress;
-
+              const dur = i === 0 ? firstPulseDur : pulseDuration;
+              const progress = Math.max(0, Math.min(1, (t - circleStart) / dur));
+              // First circle starts at DOT_R (current dot size), rest start from 0
+              const r = i === 0
+                ? DOT_R + (maxR - DOT_R) * progress
+                : maxR * progress;
               const color = i % 2 === 0 ? getPurpleColor() : getWhiteColor();
-              el.setAttribute('r', r);
-              el.setAttribute('fill', color);
-              el.setAttribute('stroke', color);
-              el.setAttribute('stroke-width', '1.5');
+
+              if (isBurst) {
+                // V2: hide solid circle, render burst particles instead
+                el.setAttribute('r', 0);
+
+                const particles = burstParticles[slot];
+                // Particle dot size: big when close to center, shrinks as they spread
+                const baseDotR = 6;
+                particles.forEach(p => {
+                  if (progress <= 0) {
+                    p.setAttribute('r', '0');
+                    return;
+                  }
+                  const norm = parseFloat(p.dataset.ringNorm);
+                  const angle = parseFloat(p.dataset.angle);
+                  const pRadius = r * norm; // radial distance from center
+                  const spreadFactor = Math.max(0, norm * progress);
+                  // Dot size: larger near center, smaller at edge
+                  const dotSize = baseDotR * (1 - norm * 0.6) * Math.min(1, progress * 3);
+
+                  p.setAttribute('cx', Math.cos(angle) * pRadius);
+                  p.setAttribute('cy', Math.sin(angle) * pRadius);
+                  p.setAttribute('r', dotSize);
+                  p.setAttribute('fill', color);
+                });
+              } else {
+                // V1: solid expanding circle
+                el.setAttribute('r', r);
+                el.setAttribute('fill', color);
+                el.setAttribute('stroke', color);
+                el.setAttribute('stroke-width', '1.5');
+                // Hide burst particles
+                burstParticles[slot].forEach(p => p.setAttribute('r', '0'));
+              }
             }
 
             // ── Resolve: organic ring reconstruction ──
@@ -1010,6 +1149,7 @@
         const tl = gsap.timeline();
 
         tl.call(() => {
+          hideBursts();
           resetPulses();
           ringStroke.setAttribute('opacity', '1');
           gsap.set(ringUnit, { x: 0, y: 0 });
@@ -1025,13 +1165,22 @@
 
       reset();
 
-      // Wire up buttons with swap behavior
-      const btnThink = cardEl.querySelector('[data-action="think"]');
-      const btnFull = cardEl.querySelector('[data-action="full"]');
-
       // Wire up Start/End toggle
       const btn = cardEl.querySelector('[data-action="think"]');
+      const versionSelect = cardEl.querySelector('[data-role="version"]');
+      const versionDesc = cardEl.querySelector('[data-role="version-desc"]');
       btn.className = 'btn-go';
+
+      const versionDescriptions = {
+        v1: 'Clean expanding circles',
+        v2: 'Burst into scattered dots',
+      };
+
+      if (versionSelect && versionDesc) {
+        versionSelect.addEventListener('change', () => {
+          versionDesc.textContent = versionDescriptions[versionSelect.value] || '';
+        });
+      }
 
       function setStart() {
         btn.textContent = 'Start';
@@ -1044,7 +1193,8 @@
       btn.addEventListener('click', () => {
         if (btn.dataset.action === 'think') {
           reset();
-          thinkingTl = createThinkingTimeline();
+          activeVersion = versionSelect ? versionSelect.value : 'v1';
+          thinkingTl = createThinkingTimeline(activeVersion);
           btn.textContent = 'End';
           btn.dataset.action = 'resolve';
           btn.className = 'btn-stop';
