@@ -3,317 +3,619 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oddle Logo — Thinking Animation</title>
+  <title>Oddle Logo — Animation Playground</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
       background: #f5f5f5;
-      font-family: system-ui, sans-serif;
+      color: #222;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 48px 40px 80px;
     }
 
-    .logo-container {
-      width: 120px;
-      height: 120px;
+    /* ── HEADER ── */
+    .page-header {
+      margin-bottom: 48px;
     }
 
-    svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
+    .page-header .subtitle {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 6px;
     }
 
-    .controls {
-      position: fixed;
-      bottom: 32px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px 40px;
+      max-width: 960px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      display: grid;
+      grid-template-rows: auto auto 60px 240px auto auto;
       gap: 16px;
     }
 
-    .controls .buttons {
-      display: flex;
-      gap: 12px;
+    .card-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: 'SF Mono', 'Fira Code', monospace;
     }
 
-    .controls button {
-      padding: 10px 20px;
-      border: 2px solid #3D0099;
-      border-radius: 8px;
-      background: white;
-      color: #3D0099;
+    .card-label.purple { color: #3D0099; }
+    .card-label.green  { color: #059669; }
+
+    .card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .card p {
       font-size: 14px;
-      font-weight: 600;
+      line-height: 1.5;
+      color: #777;
+    }
+
+    /* ── DEMO AREA ── */
+    .demo {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 240px;
+      position: relative;
+    }
+
+    .demo svg {
+      overflow: visible;
+    }
+
+    /* ── CARD CONTROLS ── */
+    .card-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-controls button {
+      padding: 6px 16px;
+      border: 1.5px solid #ddd;
+      border-radius: 20px;
+      background: #fff;
+      color: #555;
+      font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
     }
 
-    .controls button:hover {
+    .card-controls button:hover {
+      border-color: #3D0099;
+      color: #3D0099;
+    }
+
+    .card-controls button.active {
+      border-color: #3D0099;
       background: #3D0099;
-      color: white;
+      color: #fff;
     }
 
-    .size-control {
+    .card-footer {
+      font-size: 12px;
+      color: #aaa;
+      text-align: center;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* ── GLOBAL CONTROLS ── */
+    .global-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 12px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      z-index: 10;
+    }
+
+    .global-controls .speed-group {
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-
-    .size-control button {
-      padding: 6px 12px;
-      border: 2px solid #3D0099;
-      border-radius: 6px;
-      background: white;
-      color: #3D0099;
       font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      color: #777;
+      font-weight: 500;
     }
 
-    .size-control button.active,
-    .size-control button:hover {
-      background: #3D0099;
-      color: white;
-    }
-
-    .speed-control {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      color: #3D0099;
-      font-weight: 600;
-    }
-
-    .speed-control input[type="range"] {
-      width: 200px;
+    .global-controls input[type="range"] {
+      width: 120px;
       accent-color: #3D0099;
     }
 
-    .speed-control .speed-value {
-      min-width: 40px;
+    .global-controls .speed-value {
+      min-width: 32px;
+      color: #333;
+    }
+
+    .global-controls .size-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .global-controls .size-group button {
+      padding: 4px 10px;
+      border: 1.5px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      color: #777;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+
+    .global-controls .size-group button.active,
+    .global-controls .size-group button:hover {
+      border-color: #3D0099;
+      color: #3D0099;
+    }
+
+    .page-footer {
+      margin-top: 48px;
       text-align: center;
+      font-size: 12px;
+      color: #bbb;
+      font-family: 'SF Mono', 'Fira Code', monospace;
     }
   </style>
 </head>
 <body>
 
-  <div class="logo-container">
-    <svg viewBox="-120 -120 240 240">
+  <header class="page-header">
+    <div class="subtitle">Oddle Logo</div>
+    <h1>Animation Playground</h1>
+  </header>
 
-      <!--
-        4 ELEMENTS (bottom → top):
-        1. TAIL   — bean outer shape, starts scale(0), grows from eye center
-        2. RING   — purple stroke circle (eye outline)
-        3. RINGBG — white filled circle (hides tail inside eye area)
-        4. DOT    — purple circle (the pupil)
-      -->
+  <div class="grid">
 
-      <!-- 1. TAIL: bean outer path (no cutout), scaled from eye center -->
-      <g id="tail-group">
-        <path
-          id="tail"
-          transform="translate(-120.5, -120.5)"
-          d="M214.485 25.738C180.168 -8.579 124.234 -8.579 89.917 25.738L25.738 89.917C-8.579 124.234 -8.579 180.168 25.738 214.485C60.056 248.803 115.989 248.802 150.306 214.485L214.485 150.306C248.802 115.989 248.803 60.055 214.485 25.738Z"
-          fill="#3D0099"
-        />
-      </g>
+    <!-- ARTBOARD 1 -->
+    <div class="card" id="card-1">
+      <span class="card-label purple">01 — Thinking + Resolve</span>
+      <h2>Spinner to Logo</h2>
+      <p>Dot spirals outward from center, orbits inside the ring with physics wiggle, then resolves into the full Oddle bean logo.</p>
+      <div class="demo">
+        <div class="logo-container" style="width:120px;height:120px;"></div>
+      </div>
+      <div class="card-controls">
+        <button data-action="think">Thinking</button>
+        <button data-action="resolve">Resolve</button>
+        <button data-action="full">Full Sequence</button>
+        <button data-action="reset">Reset</button>
+      </div>
+      <div class="card-footer">GSAP timeline · spiral windup · ring wiggle · bean scale reveal</div>
+    </div>
 
-      <!-- 2+3. RING UNIT: moves together -->
-      <g id="ring-unit">
-        <!-- 2. RING: purple stroke circle -->
-        <circle id="ring" cx="0" cy="0" r="73"
-          fill="none" stroke="#3D0099" stroke-width="24" />
-        <!-- 3. RING BG: white circle, masks tail inside eye -->
-        <circle id="ring-bg" cx="0" cy="0" r="61" fill="white" />
-      </g>
+    <!-- ARTBOARD 2 -->
+    <div class="card" id="card-2">
+      <span class="card-label green">02 — Logo Thinking</span>
+      <h2>In-Logo Spinner</h2>
+      <p>Full logo is already resolved. The dot orbits inside the eye area as a thinking/loading indicator. No wiggle.</p>
+      <div class="demo">
+        <div class="logo-container" style="width:120px;height:120px;"></div>
+      </div>
+      <div class="card-controls">
+        <button data-action="think">Thinking</button>
+        <button data-action="resolve">Resolve</button>
+        <button data-action="full">Full Sequence</button>
+        <button data-action="reset">Reset</button>
+      </div>
+      <div class="card-footer">GSAP timeline · in-logo spin · un-resolve · wiggle · resolve</div>
+    </div>
 
-      <!-- 4. DOT: the eye pupil -->
-      <circle id="dot" cx="0" cy="0" r="28" fill="#3D0099" />
-
-    </svg>
   </div>
 
-  <div class="controls">
-    <div class="size-control">
-      <button data-size="48">48px</button>
-      <button data-size="80">80px</button>
-      <button data-size="120" class="active">120px</button>
+  <footer class="page-footer">GSAP 3.12 · SVG · Vanilla JS</footer>
+
+  <!-- GLOBAL CONTROLS -->
+  <div class="global-controls">
+    <div class="size-group">
+      <button data-size="48">48</button>
+      <button data-size="80">80</button>
+      <button data-size="120" class="active">120</button>
     </div>
-    <div class="speed-control">
-      <span>Slow</span>
-      <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1" />
+    <div class="speed-group">
+      <span>Speed</span>
+      <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1.5" />
       <span class="speed-value" id="speed-label">1x</span>
-      <span>Fast</span>
-    </div>
-    <div class="buttons">
-      <button id="btn-think">Play Thinking</button>
-      <button id="btn-resolve">Resolve to Logo</button>
-      <button id="btn-full">Full Sequence</button>
-      <button id="btn-reset">Reset</button>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
   <script>
-    const tailGroup = document.getElementById('tail-group');
-    const ringUnit = document.getElementById('ring-unit');
-    const dot = document.getElementById('dot');
-
+    const BEAN_PATH = 'M214.485 25.738C180.168 -8.579 124.234 -8.579 89.917 25.738L25.738 89.917C-8.579 124.234 -8.579 180.168 25.738 214.485C60.056 248.803 115.989 248.802 150.306 214.485L214.485 150.306C248.802 115.989 248.803 60.055 214.485 25.738Z';
     const ORBIT_RADIUS = 34;
     const RING_WIGGLE = 3;
-
-    // Eye center in SVG coords (where ring-unit lands, tail scales from)
     const EYE = { x: 34, y: -35 };
 
-    /* ── THINKING ── */
-    function createThinkingTimeline(revolutions = 3) {
-      const tl = gsap.timeline();
-      const totalRevs = 2 + revolutions;
-      const totalAngle = Math.PI * 2 * totalRevs;
-      const totalDuration = 0.6 * totalRevs;
-      const windupEnd = 2 / totalRevs;
+    /* ── ARTBOARD FACTORY ── */
+    function createArtboard(cardEl) {
+      const container = cardEl.querySelector('.logo-container');
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '-120 -120 240 240');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.overflow = 'visible';
 
-      const state = { progress: 0, wiggle: 0 };
+      svg.innerHTML = `
+        <g data-role="tail-group">
+          <path transform="translate(-120.5,-120.5)" d="${BEAN_PATH}" fill="#3D0099" />
+        </g>
+        <g data-role="ring-unit">
+          <circle cx="0" cy="0" r="73" fill="none" stroke="#3D0099" stroke-width="24" />
+          <circle cx="0" cy="0" r="61" fill="white" />
+        </g>
+        <circle data-role="dot" cx="0" cy="0" r="28" fill="#3D0099" />
+      `;
+      container.appendChild(svg);
 
-      tl.to(state, {
-        progress: 1,
-        duration: totalDuration,
-        ease: 'none',
-        onUpdate() {
-          const p = state.progress;
-          const angle = Math.PI / 2 + totalAngle * p;
+      const tailGroup = svg.querySelector('[data-role="tail-group"]');
+      const ringUnit = svg.querySelector('[data-role="ring-unit"]');
+      const dot = svg.querySelector('[data-role="dot"]');
 
-          let radius;
-          if (p < windupEnd) {
-            const rp = p / windupEnd;
-            radius = ORBIT_RADIUS * (rp * rp);
-          } else {
-            radius = ORBIT_RADIUS;
+      function createThinkingTimeline(revolutions = 3) {
+        const tl = gsap.timeline();
+        const totalRevs = 2 + revolutions;
+        const totalAngle = Math.PI * 2 * totalRevs;
+        const totalDuration = 0.6 * totalRevs;
+        const windupEnd = 2 / totalRevs;
+        const state = { progress: 0, wiggle: 0 };
+
+        tl.to(state, {
+          progress: 1, duration: totalDuration, ease: 'none',
+          onUpdate() {
+            const p = state.progress;
+            const angle = Math.PI / 2 + totalAngle * p;
+            let radius;
+            if (p < windupEnd) { const rp = p / windupEnd; radius = ORBIT_RADIUS * (rp * rp); }
+            else { radius = ORBIT_RADIUS; }
+            const dx = Math.cos(angle) * radius;
+            const dy = Math.sin(angle) * radius;
+            dot.setAttribute('cx', dx);
+            dot.setAttribute('cy', dy);
+            const wx = dx * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
+            const wy = dy * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
+            gsap.set(ringUnit, { x: wx, y: wy });
+          },
+        });
+        tl.to(state, { wiggle: 1, duration: 0.4, ease: 'power2.out' }, totalDuration * windupEnd);
+        tl.to(state, { wiggle: 0, duration: 0.5, ease: 'power2.in' }, totalDuration - 0.5);
+
+        const endState = { angle: Math.PI / 2 + totalAngle, radius: ORBIT_RADIUS };
+        tl.to(endState, {
+          radius: 0, angle: Math.PI / 2 + totalAngle + Math.PI * 2,
+          duration: 0.6, ease: 'power2.out',
+          onUpdate() {
+            dot.setAttribute('cx', Math.cos(endState.angle) * endState.radius);
+            dot.setAttribute('cy', Math.sin(endState.angle) * endState.radius);
+          },
+        });
+        tl.to(ringUnit, { x: 0, y: 0, duration: 0.2, ease: 'power2.out' }, '>-0.2');
+        return tl;
+      }
+
+      function createResolveTimeline() {
+        const tl = gsap.timeline();
+        tl.to(ringUnit, { x: EYE.x, y: EYE.y, duration: 0.7, ease: 'power2.inOut' });
+        tl.to(dot, { attr: { cx: EYE.x, cy: EYE.y }, duration: 0.7, ease: 'power2.inOut' }, '<');
+        tl.to(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}`, duration: 0.7, ease: 'power2.inOut' }, '<');
+        return tl;
+      }
+
+      function reset() {
+        gsap.killTweensOf([ringUnit, dot, tailGroup]);
+        gsap.set(ringUnit, { x: 0, y: 0 });
+        gsap.set(tailGroup, { scale: 0, svgOrigin: `${EYE.x} ${EYE.y}` });
+        gsap.set(dot, { attr: { cx: 0, cy: 0 } });
+      }
+
+      reset();
+
+      // Wire up card-level buttons
+      cardEl.querySelectorAll('.card-controls button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          if (action === 'think')   { reset(); createThinkingTimeline(3); }
+          if (action === 'resolve') { reset(); createResolveTimeline(); }
+          if (action === 'full')    { reset(); const m = gsap.timeline(); m.add(createThinkingTimeline(2)); m.add(createResolveTimeline(), '-=0.1'); }
+          if (action === 'reset')   { reset(); }
+        });
+      });
+
+      return { createThinkingTimeline, createResolveTimeline, reset, container };
+    }
+
+    /* ── ARTBOARD 2 FACTORY: Logo Thinking ── */
+    function createArtboard2(cardEl) {
+      const container = cardEl.querySelector('.logo-container');
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '-120 -120 240 240');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.overflow = 'visible';
+
+      // Full logo from the start: tail visible, ring+ringBG at eye position
+      svg.innerHTML = `
+        <g data-role="tail-group">
+          <path transform="translate(-120.5,-120.5)" d="${BEAN_PATH}" fill="#3D0099" />
+        </g>
+        <g data-role="ring-unit">
+          <circle data-role="ring-stroke" cx="0" cy="0" r="73" fill="none" stroke="#3D0099" stroke-width="24" />
+          <circle data-role="ring-bg" cx="0" cy="0" r="61" fill="white" />
+        </g>
+        <circle data-role="dot" cx="${EYE.x}" cy="${EYE.y}" r="28" fill="#3D0099" />
+      `;
+      container.appendChild(svg);
+
+      const tailGroup = svg.querySelector('[data-role="tail-group"]');
+      const ringUnit = svg.querySelector('[data-role="ring-unit"]');
+      const ringStroke = svg.querySelector('[data-role="ring-stroke"]');
+      const ringBg = svg.querySelector('[data-role="ring-bg"]');
+      const dot = svg.querySelector('[data-role="dot"]');
+
+      // Shared state (accessible by both thinking and resolve)
+      const OUTER_R = 85;
+      const STROKE_NORMAL = 24;
+      const STROKE_THIN = 14;
+      const DOT_R = 28;
+      const wiggleState = { wiggle: 0 };
+      const ringState = { thin: 0 }; // 0=normal, 1=fully thin
+      let thinkingTl = null;
+
+      // Compute current inner orbit radius from ring state
+      function getOrbitRadius() {
+        const stroke = STROKE_NORMAL + (STROKE_THIN - STROKE_NORMAL) * ringState.thin;
+        return OUTER_R - stroke - DOT_R;
+      }
+
+      // Update ring visuals from ringState
+      function updateRingVisuals() {
+        const stroke = STROKE_NORMAL + (STROKE_THIN - STROKE_NORMAL) * ringState.thin;
+        ringStroke.setAttribute('stroke-width', stroke);
+        ringStroke.setAttribute('r', OUTER_R - stroke / 2);
+        ringBg.setAttribute('r', OUTER_R - stroke);
+      }
+
+      function reset() {
+        if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
+        gsap.killTweensOf([dot, ringUnit, tailGroup, wiggleState, ringState, ringStroke, ringBg]);
+        gsap.set(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}` });
+        gsap.set(ringUnit, { x: EYE.x, y: EYE.y });
+        gsap.set(dot, { attr: { cx: EYE.x, cy: EYE.y } });
+        wiggleState.wiggle = 0;
+        ringState.thin = 0;
+        updateRingVisuals();
+      }
+
+      // All phases in one function — single onUpdate drives dot + ring together.
+      // Phase A+B+C: spiral windup → un-resolve → looping spin (seamless)
+      function createThinkingTimeline() {
+        const tl = gsap.timeline();
+        const angularSpeed = Math.PI * 2 / 0.6; // rad/s (constant throughout)
+
+        // Timing
+        const windupEnd = 1.0;
+        const transStart = 0.5;
+        const transEnd = 1.7;
+
+        // ── A+B: unified spiral + un-resolve ──
+        const abState = { time: 0 };
+        tl.to(abState, {
+          time: transEnd, duration: transEnd, ease: 'none',
+          onUpdate() {
+            const t = abState.time;
+            const angle = Math.PI / 2 + angularSpeed * t;
+
+            // Orbit radius: 0 → getOrbitRadius() over 0–windupEnd
+            const maxR = getOrbitRadius();
+            let radius;
+            if (t < windupEnd) {
+              const rp = t / windupEnd;
+              radius = maxR * (rp * rp);
+            } else {
+              radius = maxR;
+            }
+
+            // Center shift: EYE → origin over transStart–transEnd
+            let cx = EYE.x, cy = EYE.y;
+            if (t > transStart) {
+              const sp = Math.min(1, (t - transStart) / (transEnd - transStart));
+              const e = sp * sp * (3 - 2 * sp);
+              cx = EYE.x * (1 - e);
+              cy = EYE.y * (1 - e);
+              gsap.set(ringUnit, { x: cx, y: cy });
+            }
+
+            dot.setAttribute('cx', cx + Math.cos(angle) * radius);
+            dot.setAttribute('cy', cy + Math.sin(angle) * radius);
+            updateRingVisuals();
+          },
+        });
+
+        // Tail shrinks
+        tl.to(tailGroup, {
+          scale: 0, svgOrigin: `${EYE.x} ${EYE.y}`,
+          duration: transEnd - transStart,
+          ease: 'power2.inOut',
+        }, transStart);
+
+        // Wiggle fades in midway through tail shrink
+        tl.to(wiggleState, { wiggle: 1, duration: 0.5, ease: 'power2.out' }, (transStart + transEnd) / 2);
+
+        // Ring thins gradually (starts 0.5s after perfect circle, takes 2s)
+        tl.to(ringState, { thin: 1, duration: 2.0, ease: 'power2.inOut' }, transEnd + 0.5);
+
+        // ── C: looping spin — dot always tracks ring inner edge ──
+        const loopStartAngle = Math.PI / 2 + angularSpeed * transEnd;
+        const loopState = { angle: 0 };
+
+        tl.to(loopState, {
+          angle: Math.PI * 2,
+          duration: 0.6,
+          ease: 'none',
+          repeat: -1,
+          onUpdate() {
+            const orbitR = getOrbitRadius();
+            const angle = loopStartAngle + loopState.angle;
+            const dx = Math.cos(angle) * orbitR;
+            const dy = Math.sin(angle) * orbitR;
+            dot.setAttribute('cx', dx);
+            dot.setAttribute('cy', dy);
+
+            updateRingVisuals();
+
+            const wx = dx * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
+            const wy = dy * (RING_WIGGLE / orbitR) * wiggleState.wiggle;
+            gsap.set(ringUnit, { x: wx, y: wy });
+          },
+        }, transEnd); // starts exactly when A+B ends — no gap
+
+        return tl;
+      }
+
+      // Resolve — stop loop, wind down, spiral in, restore ring, grow bean
+      function createResolveTimeline() {
+        const tl = gsap.timeline();
+        if (thinkingTl) { thinkingTl.kill(); thinkingTl = null; }
+
+        // Capture current dot position
+        const cx0 = parseFloat(dot.getAttribute('cx'));
+        const cy0 = parseFloat(dot.getAttribute('cy'));
+        const angle0 = Math.atan2(cy0, cx0);
+        const angularSpeed = Math.PI * 2 / 0.6;
+
+        // Wind down wiggle + thicken ring + spiral in — all in one onUpdate
+        const resolveState = { progress: 0 };
+        const resolveDuration = 0.8;
+
+        tl.to(resolveState, {
+          progress: 1, duration: resolveDuration, ease: 'power2.out',
+          onUpdate() {
+            const p = resolveState.progress;
+
+            // Wiggle fades out
+            wiggleState.wiggle = Math.max(0, 1 - p * 2.5); // gone by p=0.4
+
+            // Ring thickens back
+            ringState.thin = Math.max(0, 1 - p * 1.5); // normal by p=0.67
+            updateRingVisuals();
+
+            // Dot spirals inward (orbit shrinks, keeps spinning)
+            const orbitR = getOrbitRadius() * (1 - p);
+            const angle = angle0 + angularSpeed * resolveDuration * p;
+            const dx = Math.cos(angle) * orbitR;
+            const dy = Math.sin(angle) * orbitR;
+            dot.setAttribute('cx', dx);
+            dot.setAttribute('cy', dy);
+
+            // Ring wiggle diminishes
+            const wx = dx * (RING_WIGGLE / Math.max(orbitR, 1)) * wiggleState.wiggle;
+            const wy = dy * (RING_WIGGLE / Math.max(orbitR, 1)) * wiggleState.wiggle;
+            gsap.set(ringUnit, { x: wx, y: wy });
+          },
+        });
+
+        // Settle ring to center
+        tl.to(ringUnit, { x: 0, y: 0, duration: 0.15, ease: 'power2.out' }, '>-0.1');
+
+        // Resolve: ring → bean
+        tl.to(ringUnit, { x: EYE.x, y: EYE.y, duration: 0.7, ease: 'power2.inOut' });
+        tl.to(dot, { attr: { cx: EYE.x, cy: EYE.y }, duration: 0.7, ease: 'power2.inOut' }, '<');
+        tl.to(tailGroup, { scale: 1, svgOrigin: `${EYE.x} ${EYE.y}`, duration: 0.7, ease: 'power2.inOut' }, '<');
+
+        return tl;
+      }
+
+      // Set initial state: full logo
+      reset();
+
+      // Wire up buttons
+      cardEl.querySelectorAll('.card-controls button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          if (action === 'think') {
+            reset();
+            thinkingTl = createThinkingTimeline(3);
           }
-
-          const dx = Math.cos(angle) * radius;
-          const dy = Math.sin(angle) * radius;
-          dot.setAttribute('cx', dx);
-          dot.setAttribute('cy', dy);
-
-          // Ring unit wiggles toward the dot
-          const wx = dx * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
-          const wy = dy * (RING_WIGGLE / ORBIT_RADIUS) * state.wiggle;
-          gsap.set(ringUnit, { x: wx, y: wy });
-        },
+          if (action === 'resolve') {
+            createResolveTimeline();
+          }
+          if (action === 'full') {
+            reset();
+            thinkingTl = createThinkingTimeline(3);
+            // Auto-resolve after 5 seconds of spinning
+            gsap.delayedCall(5, () => { createResolveTimeline(); });
+          }
+          if (action === 'reset') { reset(); }
+        });
       });
 
-      tl.to(state, { wiggle: 1, duration: 0.4, ease: 'power2.out' }, totalDuration * windupEnd);
-      tl.to(state, { wiggle: 0, duration: 0.5, ease: 'power2.in' }, totalDuration - 0.5);
-
-      // Spiral inward to center
-      const endState = { angle: Math.PI / 2 + totalAngle, radius: ORBIT_RADIUS };
-      tl.to(endState, {
-        radius: 0,
-        angle: Math.PI / 2 + totalAngle + Math.PI * 2,
-        duration: 0.6,
-        ease: 'power2.out',
-        onUpdate() {
-          dot.setAttribute('cx', Math.cos(endState.angle) * endState.radius);
-          dot.setAttribute('cy', Math.sin(endState.angle) * endState.radius);
-        },
-      });
-
-      tl.to(ringUnit, { x: 0, y: 0, duration: 0.2, ease: 'power2.out' }, '>-0.2');
-
-      return tl;
+      return { createThinkingTimeline, reset, container };
     }
 
-    /* ── RESOLVE ── */
-    function createResolveTimeline() {
-      const tl = gsap.timeline();
+    /* ── INIT ── */
+    const board1 = createArtboard(document.getElementById('card-1'));
+    const board2 = createArtboard2(document.getElementById('card-2'));
 
-      // Ring unit + dot shift to eye center (NE)
-      tl.to(ringUnit, {
-        x: EYE.x, y: EYE.y,
-        duration: 0.7,
-        ease: 'power2.inOut',
-      });
-      tl.to(dot, {
-        attr: { cx: EYE.x, cy: EYE.y },
-        duration: 0.7,
-        ease: 'power2.inOut',
-      }, '<');
-
-      // Tail (bean shape) scales up from eye center
-      // Starts at scale 0 → grows to full size
-      tl.to(tailGroup, {
-        scale: 1,
-        svgOrigin: `${EYE.x} ${EYE.y}`,
-        duration: 0.7,
-        ease: 'power2.inOut',
-      }, '<');
-
-      return tl;
-    }
-
-    /* ── RESET ── */
-    function resetAll() {
-      gsap.globalTimeline.clear();
-      gsap.set(ringUnit, { x: 0, y: 0 });
-      gsap.set(tailGroup, { scale: 0, svgOrigin: `${EYE.x} ${EYE.y}` });
-      gsap.set(dot, { attr: { cx: 0, cy: 0 } });
-    }
-
-    // Initial state: tail hidden (scale 0)
-    resetAll();
-
-    /* ── SIZE CONTROL ── */
-    const logoContainer = document.querySelector('.logo-container');
-    document.querySelectorAll('.size-control button').forEach(btn => {
+    /* ── GLOBAL SIZE ── */
+    document.querySelectorAll('.size-group button').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelector('.size-control .active').classList.remove('active');
+        document.querySelector('.size-group .active').classList.remove('active');
         btn.classList.add('active');
-        const size = btn.dataset.size + 'px';
-        logoContainer.style.width = size;
-        logoContainer.style.height = size;
+        const s = btn.dataset.size + 'px';
+        document.querySelectorAll('.logo-container').forEach(c => { c.style.width = s; c.style.height = s; });
       });
     });
 
-    /* ── SPEED CONTROL ── */
+    /* ── GLOBAL SPEED ── */
     const speedSlider = document.getElementById('speed');
     const speedLabel = document.getElementById('speed-label');
-    let timeScale = 1;
-
     speedSlider.addEventListener('input', () => {
-      timeScale = parseFloat(speedSlider.value);
-      speedLabel.textContent = timeScale.toFixed(1) + 'x';
-      // Update any running timeline
-      gsap.globalTimeline.timeScale(timeScale);
+      const ts = parseFloat(speedSlider.value);
+      speedLabel.textContent = ts.toFixed(1) + 'x';
+      gsap.globalTimeline.timeScale(ts);
     });
-
-    /* ── BUTTONS ── */
-    document.getElementById('btn-think').addEventListener('click', () => {
-      resetAll();
-      createThinkingTimeline(3).play();
-    });
-
-    document.getElementById('btn-resolve').addEventListener('click', () => {
-      resetAll();
-      createResolveTimeline().play();
-    });
-
-    document.getElementById('btn-full').addEventListener('click', () => {
-      resetAll();
-      const master = gsap.timeline();
-      master.add(createThinkingTimeline(2));
-      master.add(createResolveTimeline(), '-=0.1');
-      master.play();
-    });
-
-    document.getElementById('btn-reset').addEventListener('click', resetAll);
+    // Set default speed
+    gsap.globalTimeline.timeScale(1.5);
+    speedLabel.textContent = '1.5x';
   </script>
 </body>
 </html>
