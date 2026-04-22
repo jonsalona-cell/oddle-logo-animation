@@ -1917,6 +1917,9 @@
     // Set default speed
     gsap.globalTimeline.timeScale(1.8);
     speedLabel.textContent = '1.8x';
+
+    // Auto-play all cards on page load
+    document.querySelectorAll('.card-controls [data-action="think"]').forEach(btn => btn.click());
   </script>
 </body>
 </html>
